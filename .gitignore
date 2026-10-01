@@ -1,0 +1,9 @@
+/*/.settings/
+/.settings/
+/*/target/
+/*/.classpath
+/*/.project
+/*/.node/node/
+/*/.angular/*
+/pet-store-frontend/dist/
+/pet-store-frontend/node_modules/
