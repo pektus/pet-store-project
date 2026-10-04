@@ -7,7 +7,7 @@
 
     <groupId>com.petstore</groupId>
     <artifactId>pet-store-parent</artifactId>
-    <version>1.0.1-RELEASE</version>
+    <version>1.0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Pet Store - Parent Project</name>
     <description>Enterprise Pet Store Application built on pure Spring Framework 7 and Angular</description>
