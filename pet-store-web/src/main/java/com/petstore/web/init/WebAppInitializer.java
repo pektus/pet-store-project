@@ -5,9 +5,11 @@ import com.petstore.web.config.JpaConfig;
 import com.petstore.web.config.SecurityConfig;
 import com.petstore.web.config.StorageConfig;
 import com.petstore.web.config.WebMvcConfig;
+import jakarta.servlet.Filter;
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletRegistration;
 import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.web.filter.DelegatingFilterProxy;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
@@ -49,6 +51,13 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
     @Override
     protected String[] getServletMappings() {
         return new String[] { "/" };
+    }
+
+    @Override
+    protected Filter[] getServletFilters() {
+        return new Filter[] {
+            new DelegatingFilterProxy("springSecurityFilterChain")
+        };
     }
 
     @Override

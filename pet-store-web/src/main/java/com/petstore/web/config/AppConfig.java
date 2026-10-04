@@ -16,7 +16,8 @@ import java.util.List;
 @Configuration
 @ComponentScan(basePackages = {
         "com.petstore.service",
-        "com.petstore.web"
+        "com.petstore.web.config",
+        "com.petstore.web.security"
 })
 @PropertySource(value = "classpath:application.properties")
 public class AppConfig {
