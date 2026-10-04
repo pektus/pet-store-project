@@ -19,6 +19,26 @@
         <module>pet-store-frontend</module>
     </modules>
 
+    <scm>
+        <connection>scm:git:ssh://git@${gitea.host}:${gitea.ssh.port}/${gitea.scm.owner}/pet-store-project.git</connection>
+        <developerConnection>scm:git:ssh://git@${gitea.host}:${gitea.ssh.port}/${gitea.scm.owner}/pet-store-project.git</developerConnection>
+        <url>${gitea.url}/${gitea.scm.owner}/pet-store-project</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>gitea</id>
+            <name>Gitea Package Registry</name>
+            <url>${gitea.url}/api/packages/${gitea.package.owner}/maven</url>
+        </repository>
+        <snapshotRepository>
+            <id>gitea</id>
+            <name>Gitea Snapshot Package Registry</name>
+            <url>${gitea.url}/api/packages/${gitea.package.owner}/maven</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <properties>
         <java.version>21</java.version>
         <maven.compiler.release>21</maven.compiler.release>
@@ -56,8 +76,16 @@
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <maven.surefire.plugin.version>3.5.2</maven.surefire.plugin.version>
         <frontend.maven.plugin.version>1.15.1</frontend.maven.plugin.version>
+        <versions.maven.plugin.version>2.18.0</versions.maven.plugin.version>
         <node.version>v22.14.0</node.version>
         <npm.version>10.9.2</npm.version>
+
+        <!-- Gitea SCM & Package Distribution -->
+        <gitea.host>192.168.1.233</gitea.host>
+        <gitea.ssh.port>2222</gitea.ssh.port>
+        <gitea.url>http://192.168.1.233</gitea.url>
+        <gitea.package.owner>DevHome</gitea.package.owner>
+        <gitea.scm.owner>adrian</gitea.scm.owner>
 
         <!-- Testing -->
         <junit.jupiter.version>5.11.4</junit.jupiter.version>
@@ -267,6 +295,11 @@
                     <groupId>com.github.eirslett</groupId>
                     <artifactId>frontend-maven-plugin</artifactId>
                     <version>${frontend.maven.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>${versions.maven.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
