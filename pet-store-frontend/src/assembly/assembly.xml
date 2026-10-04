@@ -1,0 +1,27 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.2.0 https://maven.apache.org/xsd/assembly-2.2.0.xsd">
+    <id>zip</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <!-- Compiled Angular bundle files (index.html, JS/CSS bundles, static assets) placed at root of zip -->
+        <fileSet>
+            <directory>${project.basedir}/dist/pet-store-frontend/browser</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>**/*</include>
+            </includes>
+        </fileSet>
+        <!-- Third-party license attribution file placed at root of zip -->
+        <fileSet>
+            <directory>${project.basedir}/dist/pet-store-frontend</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>3rdpartylicenses.txt</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</assembly>

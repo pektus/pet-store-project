@@ -13,6 +13,14 @@ pipeline {
         ansiColor('xterm')
     }
 
+    parameters {
+        string(
+            name: 'OVERRIDE_RELEASE_VERSION',
+            defaultValue: '',
+            description: 'Optional: Manually specify the release version to publish (e.g. 1.0.0-RELEASE). Leave blank to auto-derive <baseVersion>-RELEASE from POM.'
+        )
+    }
+
     environment {
         // Gitea Server Configuration
         GITEA_HOST                 = '192.168.1.233'
@@ -27,7 +35,8 @@ pipeline {
         GITEA_TOKEN_CREDENTIAL_ID  = 'gitea-token'     // Secret text (Gitea Personal Access Token)
 
         // Pipeline State Variables (populated dynamically)
-        CURRENT_VERSION            = ''
+        CURRENT_SNAPSHOT_VERSION   = ''
+        RELEASE_VERSION            = ''
         RELEASE_TAG                = ''
         GIT_TARGET_BRANCH          = ''
         NEXT_SNAPSHOT_VERSION      = ''
@@ -40,15 +49,27 @@ pipeline {
                     echo "=== Initializing Pipeline & Inspecting SCM Metadata ==="
                     
                     // Evaluate current POM version
-                    CURRENT_VERSION = sh(
+                    CURRENT_SNAPSHOT_VERSION = sh(
                         script: "mvn help:evaluate -Dexpression='project.version' -q -DforceStdout",
                         returnStdout: true
                     ).trim()
-                    echo "Detected POM version: ${CURRENT_VERSION}"
+                    echo "Detected POM version: ${CURRENT_SNAPSHOT_VERSION}"
 
-                    // Release tag derived by stripping -SNAPSHOT
-                    RELEASE_TAG = CURRENT_VERSION.replace('-SNAPSHOT', '').trim()
-                    echo "Derived release tag: v${RELEASE_TAG}"
+                    // Derive base version without -SNAPSHOT or -RELEASE
+                    def baseVersion = CURRENT_SNAPSHOT_VERSION.replace('-SNAPSHOT', '').replace('-RELEASE', '').trim()
+
+                    // Release version with -RELEASE suffix (or parameter override)
+                    if (params.OVERRIDE_RELEASE_VERSION && params.OVERRIDE_RELEASE_VERSION.trim()) {
+                        RELEASE_VERSION = params.OVERRIDE_RELEASE_VERSION.trim()
+                        echo "Using manually overridden release version: ${RELEASE_VERSION}"
+                    } else {
+                        RELEASE_VERSION = "${baseVersion}-RELEASE"
+                        echo "Derived release version: ${RELEASE_VERSION}"
+                    }
+
+                    // Release tag matching release version
+                    RELEASE_TAG = "v${RELEASE_VERSION}"
+                    echo "Derived release tag: ${RELEASE_TAG}"
 
                     // Detect target Git branch (fallback to master if detached or unspecified)
                     GIT_TARGET_BRANCH = env.BRANCH_NAME ?: (env.GIT_BRANCH ? env.GIT_BRANCH.replace('origin/', '') : 'master')
@@ -80,9 +101,9 @@ pipeline {
             }
         }
 
-        stage('Build & Test') {
+        stage('Build & Test SNAPSHOT') {
             steps {
-                echo "=== Compiling & Testing Backend and Frontend Modules ==="
+                echo "=== Compiling & Testing SNAPSHOT Version (${CURRENT_SNAPSHOT_VERSION}) ==="
                 // Maven compile lifecycle triggers frontend-maven-plugin (Node/NPM install & Angular build)
                 // and runs JUnit 5 & Mockito test suites across pet-store-domain, pet-store-service, and pet-store-web
                 sh 'mvn clean test -s settings-ci.xml -B -Dorg.slf4j.simpleLogger.showDateTime=true'
@@ -94,23 +115,36 @@ pipeline {
             }
         }
 
-        stage('Deploy to Gitea Package Registry') {
+        stage('Deploy SNAPSHOT to Gitea') {
             steps {
-                echo "=== Packaging & Deploying Artifacts to Gitea Maven Registry ==="
-                // Packages JARs, WAR, and deploys POMs & Binaries to Gitea Package Registry
-                sh 'mvn package deploy -s settings-ci.xml -B -DskipTests'
-
-                // Archive generated WAR/JAR artifacts in Jenkins build record
-                archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war', allowEmptyArchive: true, fingerprint: true
+                echo "=== Packaging & Deploying SNAPSHOT (${CURRENT_SNAPSHOT_VERSION}) to Gitea Package Registry ==="
+                // Deploys snapshot artifacts to <snapshotRepository>
+                sh 'mvn deploy -s settings-ci.xml -B -DskipTests'
             }
         }
 
-        stage('Tag Release in Gitea') {
+        stage('Deploy RELEASE to Gitea') {
             steps {
                 script {
-                    echo "=== Creating and Pushing Release Tag v${RELEASE_TAG} ==="
+                    echo "=== Setting POM Versions to ${RELEASE_VERSION} ==="
+                    sh "mvn versions:set -DnewVersion=\"${RELEASE_VERSION}\" -DgenerateBackupPoms=false -B"
+
+                    echo "=== Packaging & Deploying RELEASE (${RELEASE_VERSION}) to Gitea Package Registry ==="
+                    // Re-packages artifacts with release version in manifests/POMs and deploys to <repository>
+                    sh 'mvn clean package deploy -s settings-ci.xml -B -DskipTests'
+
+                    // Archive generated RELEASE WAR/JAR/ZIP artifacts in Jenkins build record
+                    archiveArtifacts artifacts: '**/target/*.jar, **/target/*.war, **/target/*.zip', allowEmptyArchive: true, fingerprint: true
+                }
+            }
+        }
+
+        stage('Commit & Tag Release in Gitea') {
+            steps {
+                script {
+                    echo "=== Creating and Pushing Release Tag ${RELEASE_TAG} ==="
                     
-                    // Push Git Tag via SSH
+                    // Push Release Commit and Git Tag via SSH
                     withCredentials([sshUserPrivateKey(credentialsId: env.SSH_CREDENTIAL_ID, keyFileVariable: 'SSH_KEY')]) {
                         sh """
                             git config user.name "Jenkins CI"
@@ -118,7 +152,15 @@ pipeline {
                             export GIT_SSH_COMMAND="ssh -i \${SSH_KEY} -p ${env.GITEA_SSH_PORT} -o StrictHostKeyChecking=no"
                             GIT_REMOTE_SSH="ssh://git@${env.GITEA_HOST}:${env.GITEA_SSH_PORT}/${env.GITEA_SCM_OWNER}/${env.GITEA_REPO_NAME}.git"
 
-                            TAG_NAME="v${RELEASE_TAG}"
+                            # Stage and commit release POM files
+                            git add pom.xml **/pom.xml
+                            git commit -m "chore(release): release ${RELEASE_VERSION} [skip ci]" || echo "No changes to commit for release."
+
+                            # Push release commit to remote branch
+                            echo "Pushing release commit to \${GIT_REMOTE_SSH} branch ${GIT_TARGET_BRANCH}..."
+                            git push "\${GIT_REMOTE_SSH}" HEAD:${GIT_TARGET_BRANCH}
+
+                            TAG_NAME="${RELEASE_TAG}"
                             echo "Tagging Git commit as \${TAG_NAME}..."
                             if git rev-parse "\${TAG_NAME}" >/dev/null 2>&1; then
                                 echo "Tag \${TAG_NAME} already exists locally."
@@ -132,12 +174,12 @@ pipeline {
                     // Register Release in Gitea Releases API
                     withCredentials([string(credentialsId: env.GITEA_TOKEN_CREDENTIAL_ID, variable: 'GITEA_TOKEN')]) {
                         sh """
-                            TAG_NAME="v${RELEASE_TAG}"
+                            TAG_NAME="${RELEASE_TAG}"
                             echo "Registering Gitea release metadata..."
                             curl -k -s -X POST "${env.GITEA_URL}/api/v1/repos/${env.GITEA_SCM_OWNER}/${env.GITEA_REPO_NAME}/releases" \\
                                 -H "Authorization: token \${GITEA_TOKEN}" \\
                                 -H "Content-Type: application/json" \\
-                                -d "{\\\"tag_name\\\":\\\"\${TAG_NAME}\\\",\\\"name\\\":\\\"Release \${TAG_NAME}\\\",\\\"body\\\":\\\"Automated release build #${env.BUILD_NUMBER}. Artifacts published to Gitea Maven Package Registry (${env.GITEA_PACKAGE_OWNER}).\\\",\\\"draft\\\":false,\\\"prerelease\\\":false}" || echo "Gitea API release notification handled."
+                                -d "{\\\"tag_name\\\":\\\"\${TAG_NAME}\\\",\\\"name\\\":\\\"Release \${TAG_NAME}\\\",\\\"body\\\":\\\"Automated release build #${env.BUILD_NUMBER}. Artifacts published to Gitea Maven Package Registry (${env.GITEA_PACKAGE_OWNER}) with version ${RELEASE_VERSION} and ${CURRENT_SNAPSHOT_VERSION}.\\\",\\\"draft\\\":false,\\\"prerelease\\\":false}" || echo "Gitea API release notification handled."
                         """
                     }
                 }
@@ -147,20 +189,20 @@ pipeline {
         stage('Prompt for Next SNAPSHOT Version') {
             steps {
                 script {
-                    def suggestedNext = computeNextSnapshot(CURRENT_VERSION)
-                    echo "Current Version: ${CURRENT_VERSION}. Suggested next SNAPSHOT: ${suggestedNext}"
+                    def suggestedNext = computeNextSnapshot(RELEASE_VERSION)
+                    echo "Release Version: ${RELEASE_VERSION}. Suggested next SNAPSHOT: ${suggestedNext}"
 
                     // Timeout of 2 days allows review without blocking forever
                     timeout(time: 2, unit: 'DAYS') {
                         def userInput = input(
                             id: 'NextSnapshotVersionPrompt',
-                            message: "Build and deployment of version ${CURRENT_VERSION} succeeded!\nPlease provide the next SNAPSHOT version for ongoing development:",
+                            message: "Build and deployment of release version ${RELEASE_VERSION} (and ${CURRENT_SNAPSHOT_VERSION}) succeeded!\\nPlease provide the next SNAPSHOT version for ongoing development:",
                             ok: 'Confirm & Push to Git',
                             parameters: [
                                 string(
                                     name: 'NEXT_SNAPSHOT_VERSION',
                                     defaultValue: suggestedNext,
-                                    description: 'Next SNAPSHOT version to write into pom.xml (e.g. 1.0.1-SNAPSHOT)'
+                                    description: 'Next SNAPSHOT version to write into pom.xml (e.g. 1.0.2-SNAPSHOT)'
                                 )
                             ]
                         )
@@ -172,7 +214,7 @@ pipeline {
             }
         }
 
-        stage('Update SCM & Push') {
+        stage('Update SCM to Next SNAPSHOT & Push') {
             steps {
                 script {
                     echo "=== Updating pom.xml Versions to ${NEXT_SNAPSHOT_VERSION} and Pushing via SSH ==="
@@ -208,7 +250,7 @@ pipeline {
             cleanWs deleteDirs: false, notFailBuild: true, patterns: [[pattern: 'settings-ci.xml', type: 'INCLUDE']]
         }
         success {
-            echo "Pipeline completed successfully! Release deployed and source repository updated to ${NEXT_SNAPSHOT_VERSION}."
+            echo "Pipeline completed successfully! Both SNAPSHOT (${CURRENT_SNAPSHOT_VERSION}) and RELEASE (${RELEASE_VERSION}) deployed to Gitea, and repository updated to ${NEXT_SNAPSHOT_VERSION}."
         }
         failure {
             echo "Pipeline failed. Check stage logs for details."
@@ -218,13 +260,13 @@ pipeline {
 
 /**
  * Calculates a reasonable increment for the next development SNAPSHOT version.
- * Example: 1.0.0-SNAPSHOT -> 1.0.1-SNAPSHOT, 1.0.0 -> 1.0.1-SNAPSHOT
+ * Example: 1.0.1-RELEASE -> 1.0.2-SNAPSHOT, 1.0.0 -> 1.0.1-SNAPSHOT
  */
 def computeNextSnapshot(String version) {
     if (!version) {
-        return '1.0.1-SNAPSHOT'
+        return '1.0.2-SNAPSHOT'
     }
-    def base = version.replace('-SNAPSHOT', '').trim()
+    def base = version.replace('-SNAPSHOT', '').replace('-RELEASE', '').trim()
     def segments = base.tokenize('.')
     if (segments.size() >= 3 && segments[-1].isInteger()) {
         def patch = segments[-1].toInteger() + 1

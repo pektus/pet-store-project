@@ -138,28 +138,15 @@ Connection to 192.168.1.233 closed.
 
 ## 🚀 Part 6: How the Pipeline Uses These Credentials
 
-Your [`Jenkinsfile`](./Jenkinsfile) is already set up to seamlessly use both credentials:
+Your [`Jenkinsfile`](./Jenkinsfile) is already set up to seamlessly use both credentials and publish both **SNAPSHOT** and **-RELEASE** versions:
 
-### 1. Maven Settings Auto-Injection
-The pipeline dynamically builds a temporary `settings-ci.xml` injecting `gitea-token`:
-```groovy
-withCredentials([string(credentialsId: env.GITEA_TOKEN_CREDENTIAL_ID, variable: 'GITEA_TOKEN')]) {
-    // Injects Gitea token into <servers><server><id>gitea</id><password>${GITEA_TOKEN}</password></server></servers>
-    sh 'mvn clean deploy -s settings-ci.xml'
-}
-```
+### 1. Dual Maven Package Deployment
+1. **Deploy SNAPSHOT (`CURRENT_SNAPSHOT_VERSION`)**: Compiles, tests, and deploys development artifacts (e.g. `1.0.1-SNAPSHOT`) to `<snapshotRepository>` in Gitea Package Registry.
+2. **Deploy RELEASE (`RELEASE_VERSION`)**: Automatically sets version to `-RELEASE` (e.g. `1.0.1-RELEASE`), compiles, and deploys clean release artifacts to `<repository>` in Gitea Package Registry.
 
-### 2. SCM Commit & Push via SSH
-The pipeline securely passes the SSH private key via `withCredentials` and sets `GIT_SSH_COMMAND`:
-```groovy
-withCredentials([sshUserPrivateKey(credentialsId: env.SSH_CREDENTIAL_ID, keyFileVariable: 'SSH_KEY')]) {
-    sh '''
-        export GIT_SSH_COMMAND="ssh -i ${SSH_KEY} -p ${env.GITEA_SSH_PORT} -o StrictHostKeyChecking=no"
-        git push "${GIT_REMOTE_SSH}" HEAD:${GIT_TARGET_BRANCH}
-        git push "${GIT_REMOTE_SSH}" "v${RELEASE_TAG}"
-    '''
-}
-```
+### 2. SCM Release Tagging & Next SNAPSHOT Bump
+1. **Commit & Tag Release**: Commits the `-RELEASE` POM version, tags the commit (e.g. `v1.0.1-RELEASE`), pushes the tag to Gitea via SSH, and registers the release with release notes in Gitea Releases API.
+2. **Interactive Next SNAPSHOT Prompt**: Prompts for the next development iteration (e.g. `1.0.2-SNAPSHOT`), bumps the POMs, and pushes back to the active Git branch with `[skip ci]`.
 
 ---
 
