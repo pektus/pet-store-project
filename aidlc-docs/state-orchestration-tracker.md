@@ -2,8 +2,8 @@
 
 > **Global AI-DLC Lifecycle:** `ACTIVE`  
 > **Global Project Inception Status:** `STEP 1 [E] EXECUTE COMPLETED (APPROVED)`  
-> **Current Global Phase:** `STEP 2: SLICE-BY-SLICE EXECUTION (RECURSIVE PAVE LOOP)`  
-> **Active Slice:** `Slice 7: Accounting, Financial Reporting & Sales/Inventory Analytics`
+> **Current Global Phase:** `STEP 3: SYSTEM INTEGRATION & E2E VERIFICATION`  
+> **Active Slice:** `All Slices 1–7 Completed`
 
 ---
 
@@ -33,8 +33,8 @@
 | AI-DLC Global Step | Description | Lifecycle Phase | Status | Artifacts / Output |
 | :--- | :--- | :---: | :---: | :--- |
 | **Step 1: Global Project Inception** | Project Spec & Blueprint Inception | `[P] -> [A] -> [V] -> [E]` | `COMPLETED` | [`project-spec.md`](../project-spec.md) |
-| **Step 2: Recursive Slice Execution** | Vertical Feature Slices (1 to 7) | `PAVE Recursive` | `IN PROGRESS` | `aidlc-docs/slices/` |
-| **Step 3: System Integration & E2E** | Multi-Slice Integration & Build Verification | `PAVE` | `PLANNED` | E2E test runs & verification logs |
+| **Step 2: Recursive Slice Execution** | Vertical Feature Slices (1 to 7) | `PAVE Recursive` | `COMPLETED` | `aidlc-docs/slices/` |
+| **Step 3: System Integration & E2E** | Multi-Slice Integration & Build Verification | `PAVE` | `IN PROGRESS` | E2E test runs & verification logs |
 | **Step 4: Release Readiness & Handover** | Deployment & Documentation Finalization | `PAVE` | `PLANNED` | Release package & deployment guide |
 
 ---
@@ -42,14 +42,14 @@
 ## 3. Slice Orchestration Matrix
 
 | Slice ID | Slice Title | Assigned Focus | PAVE Stage | Slice Status | Dependencies |
-| :---: | :--- | :--- | :---: | :---: | :--- |
+| :---: | :--- | :--- | :--- | :---: | :--- |
 | **Slice 1** | **Customer Identity & Registration** | Auth, Email Verification, JWT, Angular 24 Signal Forms Reg | `[E] EXECUTE` | `COMPLETED` | Base `app_users` table |
 | **Slice 2** | **Pet & Supply Search & Exploration** | Multi-Criteria Search API, Scoped Taxonomy, Signal Forms Search | `[E] EXECUTE` | `COMPLETED` | `pets`, `supplies`, `categories` |
 | **Slice 3** | **Admin Physical Supply Management** | Supplies CRUD, Stock Replenishment, Low-Stock Alerts, Signal Form | `[E] EXECUTE` | `COMPLETED` | Flyway V6 (`supplies`) |
 | **Slice 4** | **Shopping Cart Management** | Cart DB Schema (`PET` vs `SUPPLY`), Cart API, Guest Sync, Signal Cart | `[E] EXECUTE` | `COMPLETED` | Slice 1 (`app_users`), `pets`, `supplies` |
 | **Slice 5** | **Checkout & Inventory Reservation** | Order DB Schema, Concurrency Lock, Atomic Checkout, Signal Forms Checkout | `[E] EXECUTE` | `COMPLETED` | Slice 1, Slice 3, Slice 4 |
 | **Slice 6** | **Order History & Admin Fulfillment** | Customer History API, Admin Order Dashboard, Signal Forms Filter | `[E] EXECUTE` | `COMPLETED` | Slice 5 |
-| **Slice 7** | **Accounting & Analytics Reporting** | Financial Ledger, Daily/Weekly/Monthly Sales & Inventory Reports, Export | `[P] PLAN & [A] ASK` | `ACTIVE IN-FLIGHT` | Slice 3, Slice 5, Slice 6 |
+| **Slice 7** | **Accounting & Analytics Reporting** | Financial Ledger, Daily/Weekly/Monthly Sales & Inventory Reports, Export | `[E] EXECUTE` | `COMPLETED` | Slice 3, Slice 5, Slice 6 |
 
 ---
 
@@ -143,19 +143,19 @@
   - [x] **S6-E6:** Automated backend and frontend unit tests & verification (65 backend unit tests passing, clean Angular build).
 
 ### 🧩 Slice 7: Accounting, Financial Reporting & Sales/Inventory Analytics
-- **Status:** `ACTIVE IN-FLIGHT`
-- **PAVE Loop State:** `[P] PLAN & [A] ASK`
+- **Status:** `COMPLETED`
+- **PAVE Loop State:** `[E]`
 - **Tasks:**
-  - [ ] **S7-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-7-accounting.md`).
-  - [ ] **S7-A1:** Target questions & technical decisions in slice markdown file.
-  - [ ] **S7-V1:** Slice 7 Human Approval Gate.
-  - [ ] **S7-E1:** Flyway Migration: `accounting_ledger` table with transaction refs, debit/credit entry types, and timestamps.
-  - [ ] **S7-E2:** Financial Ledger Entity, Repository, and Automated Posting Engine (recording payments and refunds).
-  - [ ] **S7-E3:** Sales Analytics Aggregation API (`daily`, `weekly`, `monthly`).
-  - [ ] **S7-E4:** Inventory Analytics Aggregation API (`daily`, `weekly`, `monthly`).
-  - [ ] **S7-E5:** CSV Export REST Endpoints (`/api/admin/reports/sales/csv`, `/api/admin/reports/inventory/csv`).
-  - [ ] **S7-E6:** Angular 24 Signal Forms Analytics Dashboard with Period Switches (`Day`, `Week`, `Month`) & CSV Download Actions.
-  - [ ] **S7-E7:** Automated unit and integration tests.
+  - [x] **S7-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-7-accounting.md`).
+  - [x] **S7-A1:** Target questions & technical decisions in slice markdown file (Q-S7.1 to Q-S7.3 approved).
+  - [x] **S7-V1:** Slice 7 Human Approval Gate.
+  - [x] **S7-E1:** Flyway Migration: `V10__create_accounting_ledger_and_reporting.sql` (`accounting_ledger` table with indices, constraints, and historical backfill).
+  - [x] **S7-E2:** Financial Ledger Entity, Repository, and Automated Posting Engine (`AccountingLedgerService` recording payments and refunds).
+  - [x] **S7-E3:** Sales Analytics Aggregation API (`DAY`, `WEEK`, `MONTH` with net revenue, refund, order, pet, and supply metrics).
+  - [x] **S7-E4:** Inventory Analytics Aggregation API (stock levels, total supply valuation, low-stock alerts, pet adoption rates).
+  - [x] **S7-E5:** CSV Export REST Endpoints (`/api/admin/reports/sales/csv`, `/api/admin/reports/inventory/csv`).
+  - [x] **S7-E6:** Angular 24 Signal Forms Analytics Dashboard with Period Switches (`Day`, `Week`, `Month`) & CSV Download Actions (`AdminReportsComponent`).
+  - [x] **S7-E7:** Automated unit and integration tests (75 backend unit tests passing, production Angular build passing).
 
 ---
 
@@ -176,3 +176,4 @@
 | `2026-10-05` | Cart | Slice 4 Shopping Cart Implemented | V7 migration, Cart entity, CartService, CartStore, CartDrawer | COMPLETED |
 | `2026-10-05` | Checkout | Slice 5 Checkout & Payment Emulated | V8 migration, Order entity, Luhn check, PaymentEmulationService | COMPLETED |
 | `2026-10-05` | Orders | Slice 6 Customer Orders & Admin Fulfillment | V9 migration, OrderFulfillmentService, Restock, Signal Views | COMPLETED |
+| `2026-10-05` | Accounting | Slice 7 Financial Ledger & Analytics Reporting | V10 migration, Ledger, Sales/Inv Aggregation, CSV, Signal Reports | COMPLETED |

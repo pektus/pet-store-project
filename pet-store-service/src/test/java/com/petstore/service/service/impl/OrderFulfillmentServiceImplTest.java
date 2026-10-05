@@ -55,6 +55,9 @@ class OrderFulfillmentServiceImplTest {
     @Mock
     private SupplyRepository supplyRepository;
 
+    @Mock
+    private com.petstore.service.service.AccountingLedgerService accountingLedgerService;
+
     @InjectMocks
     private OrderFulfillmentServiceImpl fulfillmentService;
 

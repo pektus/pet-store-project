@@ -56,6 +56,9 @@ class CheckoutServiceImplTest {
     @Mock
     private PaymentEmulationService paymentEmulationService;
 
+    @Mock
+    private com.petstore.service.service.AccountingLedgerService accountingLedgerService;
+
     @InjectMocks
     private CheckoutServiceImpl checkoutService;
 

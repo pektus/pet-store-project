@@ -5,6 +5,7 @@ import { CheckoutComponent } from './features/checkout/checkout.component';
 import { CustomerOrdersComponent } from './features/orders/customer-orders.component';
 import { AdminOrdersComponent } from './features/admin/orders/admin-orders.component';
 import { AdminInventoryComponent } from './features/admin/inventory/admin-inventory.component';
+import { AdminReportsComponent } from './features/admin/reports/admin-reports.component';
 import { CustomerRegistrationComponent } from './features/auth/customer-registration/customer-registration.component';
 import { EmailVerificationComponent } from './features/auth/email-verification/email-verification.component';
 import { adminGuard } from './core/guards/admin.guard';
@@ -54,6 +55,12 @@ export const routes: Routes = [
     component: AdminOrdersComponent,
     canActivate: [adminGuard],
     title: 'PetStore - Order Fulfillment Dashboard'
+  },
+  {
+    path: 'admin/reports',
+    component: AdminReportsComponent,
+    canActivate: [adminGuard],
+    title: 'PetStore - Financial & Analytics Reports'
   },
   {
     path: '**',

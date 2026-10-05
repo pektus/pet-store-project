@@ -35,6 +35,9 @@ import { CartStore } from '../../../core/stores/cart.store';
             <a routerLink="/admin/inventory" routerLinkActive="active" class="nav-link">
               Inventory
             </a>
+            <a routerLink="/admin/reports" routerLinkActive="active" class="nav-link">
+              Reports
+            </a>
           }
         </nav>
 

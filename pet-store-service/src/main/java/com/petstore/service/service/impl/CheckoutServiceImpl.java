@@ -41,6 +41,7 @@ public class CheckoutServiceImpl implements CheckoutService {
     private final PetRepository petRepository;
     private final SupplyRepository supplyRepository;
     private final PaymentEmulationService paymentEmulationService;
+    private final com.petstore.service.service.AccountingLedgerService accountingLedgerService;
 
     public CheckoutServiceImpl(OrderRepository orderRepository,
                                OrderItemRepository orderItemRepository,
@@ -48,7 +49,8 @@ public class CheckoutServiceImpl implements CheckoutService {
                                CartItemRepository cartItemRepository,
                                PetRepository petRepository,
                                SupplyRepository supplyRepository,
-                               PaymentEmulationService paymentEmulationService) {
+                               PaymentEmulationService paymentEmulationService,
+                               com.petstore.service.service.AccountingLedgerService accountingLedgerService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.cartRepository = cartRepository;
@@ -56,6 +58,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         this.petRepository = petRepository;
         this.supplyRepository = supplyRepository;
         this.paymentEmulationService = paymentEmulationService;
+        this.accountingLedgerService = accountingLedgerService;
     }
 
     @Override
@@ -230,6 +233,9 @@ public class CheckoutServiceImpl implements CheckoutService {
 
         // Save order and cascade order items
         Order savedOrder = orderRepository.save(order);
+
+        // Record financial ledger entry for payment
+        accountingLedgerService.recordPayment(savedOrder);
 
         // 6. Clear Customer's Cart
         cart.clear();

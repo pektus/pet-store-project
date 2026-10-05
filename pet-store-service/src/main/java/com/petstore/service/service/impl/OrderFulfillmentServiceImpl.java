@@ -19,6 +19,7 @@ import com.petstore.service.exception.ResourceNotFoundException;
 import com.petstore.service.repository.OrderRepository;
 import com.petstore.service.repository.PetRepository;
 import com.petstore.service.repository.SupplyRepository;
+import com.petstore.service.service.AccountingLedgerService;
 import com.petstore.service.service.OrderFulfillmentService;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -44,13 +45,16 @@ public class OrderFulfillmentServiceImpl implements OrderFulfillmentService {
     private final OrderRepository orderRepository;
     private final PetRepository petRepository;
     private final SupplyRepository supplyRepository;
+    private final AccountingLedgerService accountingLedgerService;
 
     public OrderFulfillmentServiceImpl(OrderRepository orderRepository,
                                        PetRepository petRepository,
-                                       SupplyRepository supplyRepository) {
+                                       SupplyRepository supplyRepository,
+                                       AccountingLedgerService accountingLedgerService) {
         this.orderRepository = orderRepository;
         this.petRepository = petRepository;
         this.supplyRepository = supplyRepository;
+        this.accountingLedgerService = accountingLedgerService;
     }
 
     @Override
@@ -198,6 +202,9 @@ public class OrderFulfillmentServiceImpl implements OrderFulfillmentService {
         order.setPaymentStatus(PaymentStatus.REFUNDED);
         order.setCancelledAt(Instant.now());
         order.setCancellationReason(reason);
+
+        // Record financial ledger refund
+        accountingLedgerService.recordRefund(order, reason);
 
         if (order.getItems() != null) {
             for (OrderItem item : order.getItems()) {
