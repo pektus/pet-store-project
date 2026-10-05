@@ -1,6 +1,6 @@
 import { Component, computed, inject, model, OnInit, signal } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthStore } from '../../core/stores/auth.store';
 import { CartStore } from '../../core/stores/cart.store';
@@ -10,7 +10,7 @@ import { CheckoutQuote, CheckoutRequest, OrderResponse } from '../../core/models
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, CurrencyPipe, DatePipe, FormsModule],
+  imports: [CommonModule, CurrencyPipe, DatePipe, FormsModule, RouterLink],
   template: `
     <div class="checkout-container container">
       @if (completedOrder()) {
@@ -98,7 +98,8 @@ import { CheckoutQuote, CheckoutRequest, OrderResponse } from '../../core/models
           </div>
 
           <div class="receipt-actions">
-            <button class="btn btn-primary" (click)="returnToCatalog()">Continue Shopping</button>
+            <a routerLink="/orders" class="btn btn-primary">View My Orders</a>
+            <button class="btn btn-secondary" (click)="returnToCatalog()">Continue Shopping</button>
           </div>
         </div>
 

@@ -57,6 +57,34 @@ export interface OrderResponse {
   shippingCountry: string;
   items: OrderItemResponse[];
   createdAt: string;
+  carrier?: string | null;
+  trackingNumber?: string | null;
+  cancellationReason?: string | null;
+  cancelledAt?: string | null;
+  shippedAt?: string | null;
+  deliveredAt?: string | null;
+}
+
+export interface OrderStatusUpdateRequest {
+  status: OrderStatus;
+  carrier?: string | null;
+  trackingNumber?: string | null;
+  cancellationReason?: string | null;
+}
+
+export interface OrderCancelRequest {
+  reason?: string;
+}
+
+export interface OrderPageResponse {
+  content: OrderResponse[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
 }
 
 export interface CheckoutQuote {

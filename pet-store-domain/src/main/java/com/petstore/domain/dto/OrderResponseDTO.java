@@ -32,6 +32,13 @@ public class OrderResponseDTO {
     private List<OrderItemResponseDTO> items = new ArrayList<>();
     private Instant createdAt;
 
+    private String carrier;
+    private String trackingNumber;
+    private String cancellationReason;
+    private Instant cancelledAt;
+    private Instant shippedAt;
+    private Instant deliveredAt;
+
     public OrderResponseDTO() {
     }
 
@@ -43,6 +50,22 @@ public class OrderResponseDTO {
                             String shippingCity, String shippingState, String shippingPostalCode,
                             String shippingCountry, List<OrderItemResponseDTO> items,
                             Instant createdAt) {
+        this(orderNumber, status, paymentStatus, transactionId, cardBrand, cardLastFour,
+             subtotal, taxAmount, shippingAmount, totalAmount, recipientName, recipientPhone,
+             shippingAddressLine1, shippingAddressLine2, shippingCity, shippingState,
+             shippingPostalCode, shippingCountry, items, createdAt, null, null, null, null, null, null);
+    }
+
+    public OrderResponseDTO(String orderNumber, OrderStatus status, PaymentStatus paymentStatus,
+                            String transactionId, CardBrand cardBrand, String cardLastFour,
+                            BigDecimal subtotal, BigDecimal taxAmount, BigDecimal shippingAmount,
+                            BigDecimal totalAmount, String recipientName, String recipientPhone,
+                            String shippingAddressLine1, String shippingAddressLine2,
+                            String shippingCity, String shippingState, String shippingPostalCode,
+                            String shippingCountry, List<OrderItemResponseDTO> items,
+                            Instant createdAt, String carrier, String trackingNumber,
+                            String cancellationReason, Instant cancelledAt, Instant shippedAt,
+                            Instant deliveredAt) {
         this.orderNumber = orderNumber;
         this.status = status;
         this.paymentStatus = paymentStatus;
@@ -63,6 +86,12 @@ public class OrderResponseDTO {
         this.shippingCountry = shippingCountry;
         this.items = items != null ? items : new ArrayList<>();
         this.createdAt = createdAt;
+        this.carrier = carrier;
+        this.trackingNumber = trackingNumber;
+        this.cancellationReason = cancellationReason;
+        this.cancelledAt = cancelledAt;
+        this.shippedAt = shippedAt;
+        this.deliveredAt = deliveredAt;
     }
 
     public String getOrderNumber() {
@@ -223,5 +252,53 @@ public class OrderResponseDTO {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getCarrier() {
+        return carrier;
+    }
+
+    public void setCarrier(String carrier) {
+        this.carrier = carrier;
+    }
+
+    public String getTrackingNumber() {
+        return trackingNumber;
+    }
+
+    public void setTrackingNumber(String trackingNumber) {
+        this.trackingNumber = trackingNumber;
+    }
+
+    public String getCancellationReason() {
+        return cancellationReason;
+    }
+
+    public void setCancellationReason(String cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+
+    public Instant getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(Instant cancelledAt) {
+        this.cancelledAt = cancelledAt;
+    }
+
+    public Instant getShippedAt() {
+        return shippedAt;
+    }
+
+    public void setShippedAt(Instant shippedAt) {
+        this.shippedAt = shippedAt;
+    }
+
+    public Instant getDeliveredAt() {
+        return deliveredAt;
+    }
+
+    public void setDeliveredAt(Instant deliveredAt) {
+        this.deliveredAt = deliveredAt;
     }
 }

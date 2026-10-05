@@ -23,9 +23,17 @@ import { CartStore } from '../../../core/stores/cart.store';
           <a routerLink="/supplies" routerLinkActive="active" class="nav-link">
             Pet Supplies
           </a>
+          @if (authStore.isAuthenticated() && !authStore.isAdmin()) {
+            <a routerLink="/orders" routerLinkActive="active" class="nav-link">
+              My Orders
+            </a>
+          }
           @if (authStore.isAdmin()) {
+            <a routerLink="/admin/orders" routerLinkActive="active" class="nav-link">
+              Orders
+            </a>
             <a routerLink="/admin/inventory" routerLinkActive="active" class="nav-link">
-              Admin Inventory
+              Inventory
             </a>
           }
         </nav>

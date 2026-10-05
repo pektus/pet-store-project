@@ -89,6 +89,24 @@ public class Order implements Serializable {
     @Column(name = "failure_reason", length = 255)
     private String failureReason;
 
+    @Column(length = 50)
+    private String carrier;
+
+    @Column(name = "tracking_number", length = 100)
+    private String trackingNumber;
+
+    @Column(name = "cancellation_reason", length = 255)
+    private String cancellationReason;
+
+    @Column(name = "cancelled_at")
+    private Instant cancelledAt;
+
+    @Column(name = "shipped_at")
+    private Instant shippedAt;
+
+    @Column(name = "delivered_at")
+    private Instant deliveredAt;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
 
@@ -350,6 +368,54 @@ public class Order implements Serializable {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getCarrier() {
+        return carrier;
+    }
+
+    public void setCarrier(String carrier) {
+        this.carrier = carrier;
+    }
+
+    public String getTrackingNumber() {
+        return trackingNumber;
+    }
+
+    public void setTrackingNumber(String trackingNumber) {
+        this.trackingNumber = trackingNumber;
+    }
+
+    public String getCancellationReason() {
+        return cancellationReason;
+    }
+
+    public void setCancellationReason(String cancellationReason) {
+        this.cancellationReason = cancellationReason;
+    }
+
+    public Instant getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(Instant cancelledAt) {
+        this.cancelledAt = cancelledAt;
+    }
+
+    public Instant getShippedAt() {
+        return shippedAt;
+    }
+
+    public void setShippedAt(Instant shippedAt) {
+        this.shippedAt = shippedAt;
+    }
+
+    public Instant getDeliveredAt() {
+        return deliveredAt;
+    }
+
+    public void setDeliveredAt(Instant deliveredAt) {
+        this.deliveredAt = deliveredAt;
     }
 
     @Override

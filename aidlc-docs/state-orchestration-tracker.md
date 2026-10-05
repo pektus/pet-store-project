@@ -3,7 +3,7 @@
 > **Global AI-DLC Lifecycle:** `ACTIVE`  
 > **Global Project Inception Status:** `STEP 1 [E] EXECUTE COMPLETED (APPROVED)`  
 > **Current Global Phase:** `STEP 2: SLICE-BY-SLICE EXECUTION (RECURSIVE PAVE LOOP)`  
-> **Active Slice:** `Slice 6: Customer Order History & Admin Order Fulfillment`
+> **Active Slice:** `Slice 7: Accounting, Financial Reporting & Sales/Inventory Analytics`
 
 ---
 
@@ -48,8 +48,8 @@
 | **Slice 3** | **Admin Physical Supply Management** | Supplies CRUD, Stock Replenishment, Low-Stock Alerts, Signal Form | `[E] EXECUTE` | `COMPLETED` | Flyway V6 (`supplies`) |
 | **Slice 4** | **Shopping Cart Management** | Cart DB Schema (`PET` vs `SUPPLY`), Cart API, Guest Sync, Signal Cart | `[E] EXECUTE` | `COMPLETED` | Slice 1 (`app_users`), `pets`, `supplies` |
 | **Slice 5** | **Checkout & Inventory Reservation** | Order DB Schema, Concurrency Lock, Atomic Checkout, Signal Forms Checkout | `[E] EXECUTE` | `COMPLETED` | Slice 1, Slice 3, Slice 4 |
-| **Slice 6** | **Order History & Admin Fulfillment** | Customer History API, Admin Order Dashboard, Signal Forms Filter | `[P] PLAN & [A] ASK` | `ACTIVE IN-FLIGHT` | Slice 5 |
-| **Slice 7** | **Accounting & Analytics Reporting** | Financial Ledger, Daily/Weekly/Monthly Sales & Inventory Reports, Export | `[P] PLAN` | `QUEUED` | Slice 3, Slice 5, Slice 6 |
+| **Slice 6** | **Order History & Admin Fulfillment** | Customer History API, Admin Order Dashboard, Signal Forms Filter | `[E] EXECUTE` | `COMPLETED` | Slice 5 |
+| **Slice 7** | **Accounting & Analytics Reporting** | Financial Ledger, Daily/Weekly/Monthly Sales & Inventory Reports, Export | `[P] PLAN & [A] ASK` | `ACTIVE IN-FLIGHT` | Slice 3, Slice 5, Slice 6 |
 
 ---
 
@@ -129,30 +129,33 @@
   - [x] **S5-E7:** Automated unit and integration verification (42 backend unit tests passing, frontend production build passing).
 
 ### 🧩 Slice 6: Customer Order History & Admin Order Fulfillment
+- **Status:** `COMPLETED`
+- **PAVE Loop State:** `[E]`
+- **Tasks:**
+  - [x] **S6-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-6-orders.md`).
+  - [x] **S6-A1:** Clarifications & Technical Design Choices in Slice Markdown (Q-S6.1 to Q-S6.3 approved).
+  - [x] **S6-V1:** Slice 6 Human Approval Gate.
+  - [x] **S6-E1:** Order History API for Customer (`GET /api/customer/orders`, `GET /api/customer/orders/{orderNumber}`, `POST /api/customer/orders/{orderNumber}/cancel`).
+  - [x] **S6-E2:** Admin Order Management API (`GET /api/admin/orders`, `PATCH /api/admin/orders/{orderNumber}/status`).
+  - [x] **S6-E3:** Order Status Transition Validation & Inventory Rollback on Cancellation (`CONFIRMED` -> `PROCESSING` -> `SHIPPED` -> `DELIVERED`, or `CANCELLED`).
+  - [x] **S6-E4:** Angular 24 Customer "My Orders" History View with Item Details & Status Timeline Stepper.
+  - [x] **S6-E5:** Angular 24 Admin Order Management Dashboard with Signal Forms Filter (Status, Customer, Date Range) & Status Transition Controls.
+  - [x] **S6-E6:** Automated backend and frontend unit tests & verification (65 backend unit tests passing, clean Angular build).
+
+### 🧩 Slice 7: Accounting, Financial Reporting & Sales/Inventory Analytics
 - **Status:** `ACTIVE IN-FLIGHT`
 - **PAVE Loop State:** `[P] PLAN & [A] ASK`
 - **Tasks:**
-  - [ ] **S6-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-6-orders.md`).
-  - [ ] **S6-A1:** Clarifications & Technical Design Choices in Slice Markdown.
-  - [ ] **S6-V1:** Slice 6 Human Approval Gate.
-  - [ ] **S6-E1:** Order History API for Customer (`GET /api/customer/orders`, `GET /api/customer/orders/{orderNumber}`).
-  - [ ] **S6-E2:** Admin Order Management API (`GET /api/admin/orders`, `PATCH /api/admin/orders/{orderNumber}/status`).
-  - [ ] **S6-E3:** Order Status Transition Validation & Inventory Rollback on Cancellation (`CONFIRMED` -> `PROCESSING` -> `SHIPPED` -> `DELIVERED`, or `CANCELLED`).
-  - [ ] **S6-E4:** Angular 24 Customer "My Orders" History View with Item Details & Status Timeline.
-  - [ ] **S6-E5:** Angular 24 Admin Order Management Dashboard with Signal Forms Filter (Status, Customer, Date Range) & Status Transition Controls.
-  - [ ] **S6-E6:** Automated backend and frontend unit tests & verification.
-
-### 🧩 Slice 7: Accounting, Financial Reporting & Sales/Inventory Analytics
-- **Status:** `QUEUED`
-- **PAVE Loop State:** `NOT STARTED`
-- **Tasks:**
   - [ ] **S7-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-7-accounting.md`).
-  - [ ] **S7-E1:** Flyway Migration: `accounting_ledger` table with transaction refs and timestamps.
-  - [ ] **S7-E2:** Financial Ledger Entity, Repository, and Automated Posting Engine.
+  - [ ] **S7-A1:** Target questions & technical decisions in slice markdown file.
+  - [ ] **S7-V1:** Slice 7 Human Approval Gate.
+  - [ ] **S7-E1:** Flyway Migration: `accounting_ledger` table with transaction refs, debit/credit entry types, and timestamps.
+  - [ ] **S7-E2:** Financial Ledger Entity, Repository, and Automated Posting Engine (recording payments and refunds).
   - [ ] **S7-E3:** Sales Analytics Aggregation API (`daily`, `weekly`, `monthly`).
   - [ ] **S7-E4:** Inventory Analytics Aggregation API (`daily`, `weekly`, `monthly`).
-  - [ ] **S7-E5:** CSV Export REST Endpoints.
-  - [ ] **S7-E6:** Angular 24 Signal Forms Analytics Dashboard with Period Switches (`Day`, `Week`, `Month`).
+  - [ ] **S7-E5:** CSV Export REST Endpoints (`/api/admin/reports/sales/csv`, `/api/admin/reports/inventory/csv`).
+  - [ ] **S7-E6:** Angular 24 Signal Forms Analytics Dashboard with Period Switches (`Day`, `Week`, `Month`) & CSV Download Actions.
+  - [ ] **S7-E7:** Automated unit and integration tests.
 
 ---
 
@@ -171,3 +174,5 @@
 | `2026-10-05` | Admin | Added Admin Physical Supplies (Slice 3) | User question: confirm admin support for supplies | APPROVED |
 | `2026-10-05` | Accounting | Added Accounting & Reports (Slice 7) | User requirement: sales & inventory per day, week, month | APPROVED |
 | `2026-10-05` | Cart | Slice 4 Shopping Cart Implemented | V7 migration, Cart entity, CartService, CartStore, CartDrawer | COMPLETED |
+| `2026-10-05` | Checkout | Slice 5 Checkout & Payment Emulated | V8 migration, Order entity, Luhn check, PaymentEmulationService | COMPLETED |
+| `2026-10-05` | Orders | Slice 6 Customer Orders & Admin Fulfillment | V9 migration, OrderFulfillmentService, Restock, Signal Views | COMPLETED |
