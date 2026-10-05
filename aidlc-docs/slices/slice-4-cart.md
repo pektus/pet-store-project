@@ -1,7 +1,7 @@
 # Slice 4: Shopping Cart Management (`aidlc-docs/slices/slice-4-cart.md`)
 
-> **AI-DLC Slice Lifecycle Phase:** `[P] PLAN & [A] ASK`  
-> **Status:** `[V] VALIDATION GATE - PENDING HUMAN REVIEW`  
+> **AI-DLC Slice Lifecycle Phase:** `[E] EXECUTE - COMPLETED & VERIFIED`  
+> **Status:** `COMPLETED & VERIFIED (BUILD SUCCESS)`  
 > **Slice Focus:** Active Shopping Cart, Pet vs Supply Quantity Rules, Guest Cart Synchronization, Signal-First Cart Drawer
 
 ---
@@ -49,12 +49,12 @@ As defined in the approved Project Inception Blueprint (`project-spec.md` Q1.1 &
 * **Q-S4.1: Cart Merge Conflict Policy on Login:**  
   When an anonymous user adds a physical supply to their guest cart (e.g. 2 units of Kibble), and then logs in to an account that already had 3 units of the same Kibble in their saved DB cart, how should quantities merge?  
   - *Architect Recommendation:* Sum the quantities (`2 + 3 = 5 units`), capped at the available warehouse stock quantity. If the sum exceeds warehouse inventory, set quantity to maximum available stock and display a notification.  
-  - **User Answer / Decision:** `[Adopt recommendation / Specify custom behavior]`
+  - **User Answer / Decision:** Accept Architect recommendation
 
 * **Q-S4.2: Pet Availability in Cart Notice:**  
   If another customer adopts a pet while it is sitting in someone's cart, how should the cart react?  
   - *Architect Recommendation:* During cart fetch (`GET /api/cart`), the system inspects pet status; if status is no longer `AVAILABLE`, the item is flagged with `isAvailable: false` and a warning badge "No longer available (Adopted)" appears in the cart, preventing checkout until removed.  
-  - **User Answer / Decision:** `[Adopt recommendation / Specify custom behavior]`
+  - **User Answer / Decision:** Accept Architect recommendation
 
 ---
 
@@ -176,17 +176,30 @@ CREATE INDEX idx_cart_items_cart ON cart_items(cart_id);
 
 ---
 
-## 5. Human Validation & Approval Gate
+## 5. Execution Summary & Verification
 
-```
-================================================================================
-                         HUMAN APPROVAL GATE - SLICE 4 [V]
-================================================================================
- Current State: SLICE 4 SPECIFICATION DRAFTED - AWAITING HUMAN REVIEW & APPROVAL
- Target Spec:   aidlc-docs/slices/slice-4-cart.md
- Action Required:
-   1. Review Slice 4 cart architecture, single-pet vs multi-supply rules, and sync policy.
-   2. Edit your decisions into Q-S4.1 and Q-S4.2 above (or adopt recommendations).
-   3. When ready, reply "Approved" (or "Approved Slice 4") in chat to begin Slice 4 [E] Execution.
-================================================================================
-```
+### Implemented Artifacts:
+- **Database & Flyway:** `V7__create_cart_tables.sql` with `carts` and `cart_items` tables, polymorphic pet/supply constraints, and session tracking.
+- **Domain Entities & DTOs:**
+  - `Cart.java`, `CartItem.java`, `CartItemType.java`
+  - `AddToCartRequest.java`, `UpdateCartItemRequest.java`, `CartSyncRequest.java`, `CartResponseDTO.java`, `CartItemResponseDTO.java`
+- **Persistence & Service Layer:**
+  - `CartRepository.java`, `CartItemRepository.java`
+  - `CartService.java`, `CartServiceImpl.java` (pet single-lock, supply quantity merge up to stock, guest sync)
+  - Unit tests: `CartServiceImplTest.java` (7/7 tests passing; all 31 service & domain tests passing)
+- **Web MVC & Security:**
+  - `CartController.java` (`GET /api/cart`, `POST /api/cart/items`, `PUT /api/cart/items/{id}`, `DELETE /api/cart/items/{id}`, `DELETE /api/cart`, `POST /api/cart/sync`)
+  - `SecurityConfig.java` configured for public guest access and authenticated sync.
+  - `GlobalExceptionHandler.java` handling `IllegalStateException` and `IllegalArgumentException`.
+- **Frontend (Angular 24 Signal-First):**
+  - Models: `cart.model.ts`
+  - Services: `cart.service.ts` with session token management.
+  - State: `CartStore.ts` with reactive signals, computed totals, and guest sync.
+  - Components:
+    - Standalone `CartDrawerComponent` (slide-over drawer with quantity steppers, availability flags, and checkout triggers).
+    - `NavbarComponent` with reactive cart badge and drawer toggle.
+    - "Adopt / Add to Cart" integration on `PetCardComponent`, `PetListRowComponent`, and `PetDetailModalComponent`.
+    - Customer-facing `SupplyCatalogComponent` (`/supplies`) with real-time stock badges and "Add to Cart" actions.
+- **Build Verification:**
+  - Backend: `mvn clean test` across parent, domain, service, and web -> `BUILD SUCCESS` (31 unit tests passing).
+  - Frontend: `npm.cmd run build` -> `Application bundle generation complete` (0 errors).

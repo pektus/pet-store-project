@@ -1,7 +1,8 @@
-import { Component, input, output, computed } from '@angular/core';
+import { Component, input, output, computed, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { PetSummary } from '../../../core/models/pet.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
+import { CartStore } from '../../../core/stores/cart.store';
 
 @Component({
   selector: 'app-pet-card',
@@ -32,9 +33,18 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
 
         <div class="card-footer">
           <span class="price">{{ pet().price | currency }}</span>
-          <button class="btn btn-secondary btn-sm" (click)="$event.stopPropagation(); selectPet.emit(pet().id)">
-            Details
-          </button>
+          <div class="card-actions">
+            <button class="btn btn-secondary btn-sm" (click)="$event.stopPropagation(); selectPet.emit(pet().id)">
+              Details
+            </button>
+            @if (pet().status === 'AVAILABLE') {
+              <button class="btn btn-primary btn-sm btn-adopt" 
+                      [disabled]="cartStore.isPetInCart(pet().id)"
+                      (click)="$event.stopPropagation(); adoptPet()">
+                {{ cartStore.isPetInCart(pet().id) ? 'In Cart' : 'Adopt' }}
+              </button>
+            }
+          </div>
         </div>
       </div>
     </div>
@@ -121,11 +131,26 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
       font-weight: 700;
       color: var(--primary);
     }
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .btn-adopt {
+      background-color: var(--primary);
+      color: #ffffff;
+    }
   `]
 })
 export class PetCardComponent {
+  readonly cartStore = inject(CartStore);
+
   readonly pet = input.required<PetSummary>();
   readonly selectPet = output<number>();
+
+  adoptPet(): void {
+    this.cartStore.addItem('PET', this.pet().id, 1);
+  }
 
   readonly ageDisplay = computed(() => {
     const months = this.pet().ageMonths;

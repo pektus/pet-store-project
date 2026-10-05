@@ -3,7 +3,7 @@
 > **Global AI-DLC Lifecycle:** `ACTIVE`  
 > **Global Project Inception Status:** `STEP 1 [E] EXECUTE COMPLETED (APPROVED)`  
 > **Current Global Phase:** `STEP 2: SLICE-BY-SLICE EXECUTION (RECURSIVE PAVE LOOP)`  
-> **Active Slice:** `Slice 3: Admin Catalog & Physical Supply Management`
+> **Active Slice:** `Slice 5: Checkout, Inventory Reservation & Payment Emulation`
 
 ---
 
@@ -46,8 +46,8 @@
 | **Slice 1** | **Customer Identity & Registration** | Auth, Email Verification, JWT, Angular 24 Signal Forms Reg | `[E] EXECUTE` | `COMPLETED` | Base `app_users` table |
 | **Slice 2** | **Pet & Supply Search & Exploration** | Multi-Criteria Search API, Scoped Taxonomy, Signal Forms Search | `[E] EXECUTE` | `COMPLETED` | `pets`, `supplies`, `categories` |
 | **Slice 3** | **Admin Physical Supply Management** | Supplies CRUD, Stock Replenishment, Low-Stock Alerts, Signal Form | `[E] EXECUTE` | `COMPLETED` | Flyway V6 (`supplies`) |
-| **Slice 4** | **Shopping Cart Management** | Cart DB Schema (`PET` vs `SUPPLY`), Cart API, Guest Sync, Signal Cart | `[P] PLAN` | `ACTIVE IN-FLIGHT` | Slice 1 (`app_users`), `pets`, `supplies` |
-| **Slice 5** | **Checkout & Inventory Reservation** | Order DB Schema, Concurrency Lock, Atomic Checkout, Signal Forms Checkout | `[P] PLAN` | `QUEUED` | Slice 1, Slice 3, Slice 4 |
+| **Slice 4** | **Shopping Cart Management** | Cart DB Schema (`PET` vs `SUPPLY`), Cart API, Guest Sync, Signal Cart | `[E] EXECUTE` | `COMPLETED` | Slice 1 (`app_users`), `pets`, `supplies` |
+| **Slice 5** | **Checkout & Inventory Reservation** | Order DB Schema, Concurrency Lock, Atomic Checkout, Signal Forms Checkout | `[P] PLAN & [A] ASK` | `ACTIVE IN-FLIGHT` | Slice 1, Slice 3, Slice 4 |
 | **Slice 6** | **Order History & Admin Fulfillment** | Customer History API, Admin Order Dashboard, Signal Forms Filter | `[P] PLAN` | `QUEUED` | Slice 5 |
 | **Slice 7** | **Accounting & Analytics Reporting** | Financial Ledger, Daily/Weekly/Monthly Sales & Inventory Reports, Export | `[P] PLAN` | `QUEUED` | Slice 3, Slice 5, Slice 6 |
 
@@ -100,30 +100,33 @@
   - [x] **S3-E6:** Automated backend and frontend unit tests (33/33 tests passing, production Angular build passing).
 
 ### 🧩 Slice 4: Shopping Cart Management
-- **Status:** `ACTIVE IN-FLIGHT`
-- **PAVE Loop State:** `[P] PLAN`
+- **Status:** `COMPLETED`
+- **PAVE Loop State:** `[E]`
 - **Tasks:**
-  - [ ] **S4-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-4-cart.md`).
-  - [ ] **S4-A1:** Target questions & technical decisions in slice markdown file.
-  - [ ] **S4-V1:** Slice 4 Human Approval Gate.
-  - [ ] **S4-E1:** Flyway Migration: `carts`, `cart_items` (`PET` single lock vs `SUPPLY` multi-quantity).
-  - [ ] **S4-E2:** Cart JPA Entities & Repositories (`Cart`, `CartItem`).
-  - [ ] **S4-E3:** Cart Service & REST API endpoints (`GET`, `POST`, `PUT`, `DELETE`).
-  - [ ] **S4-E4:** Guest Cart Synchronization Endpoint (`POST /api/cart/sync`).
-  - [ ] **S4-E5:** Angular 24 Signal-First Cart Service & Cart Drawer Component.
-  - [ ] **S4-E6:** Automated backend and frontend unit tests.
+  - [x] **S4-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-4-cart.md`).
+  - [x] **S4-A1:** Target questions & technical decisions in slice markdown file (capping merged quantities, pet availability alert).
+  - [x] **S4-V1:** Slice 4 Human Approval Gate.
+  - [x] **S4-E1:** Flyway Migration: `V7__create_cart_tables.sql` (`carts`, `cart_items` with unique pet and supply constraints).
+  - [x] **S4-E2:** Cart JPA Entities & Repositories (`Cart`, `CartItem`, `CartItemType`, `CartRepository`, `CartItemRepository`).
+  - [x] **S4-E3:** Cart Service & REST API endpoints (`CartService`, `CartServiceImpl`, `CartController`).
+  - [x] **S4-E4:** Guest Cart Synchronization Endpoint (`POST /api/cart/sync`).
+  - [x] **S4-E5:** Angular 24 Signal-First CartStore, `CartDrawerComponent`, and customer-facing `SupplyCatalogComponent`.
+  - [x] **S4-E6:** Automated backend and frontend unit tests (31/31 backend tests passing, full Angular build passing).
 
-### 🧩 Slice 5: Checkout, Inventory Reservation & Order Processing
-- **Status:** `QUEUED`
-- **PAVE Loop State:** `NOT STARTED`
+### 🧩 Slice 5: Checkout, Inventory Reservation & Payment Emulation
+- **Status:** `ACTIVE IN-FLIGHT`
+- **PAVE Loop State:** `[P] PLAN & [A] ASK`
 - **Tasks:**
   - [ ] **S5-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-5-checkout.md`).
-  - [ ] **S5-E1:** Flyway Migration: `orders`, `order_items` tables with payment and masked card columns.
-  - [ ] **S5-E2:** Order JPA Entities & Repositories (`Order`, `OrderItem`).
-  - [ ] **S5-E3:** Payment Emulation Service with Card Validation (Luhn check, expiry check, CVV check, decline simulation).
-  - [ ] **S5-E4:** Atomic Checkout Service with Pet Locking, Supply Stock Decrement, and Simulated Authorization.
-  - [ ] **S5-E5:** Checkout REST API (`POST /api/checkout`).
-  - [ ] **S5-E6:** Angular 24 Signal Forms Checkout & Payment Component with Real-Time Card Validation & Order Receipt.
+  - [ ] **S5-A1:** Target questions & technical decisions in slice markdown file (Luhn algorithm check, expiry check, CVV check, decline simulation, stock reservation policy).
+  - [ ] **S5-V1:** Slice 5 Human Approval Gate.
+  - [ ] **S5-E1:** Flyway Migration: `V8__create_orders_and_order_items_tables.sql`.
+  - [ ] **S5-E2:** Order & OrderItem Entities, Enums (`OrderStatus`, `PaymentStatus`), and Repositories.
+  - [ ] **S5-E3:** Payment Emulation Service (`PaymentService`, `PaymentServiceImpl`) with Luhn validator and decline card simulation.
+  - [ ] **S5-E4:** Atomic Checkout Service (`CheckoutService`, `CheckoutServiceImpl`) with pessimistic/optimistic inventory reservation and cart clearance.
+  - [ ] **S5-E5:** Checkout REST Endpoints (`POST /api/checkout`).
+  - [ ] **S5-E6:** Angular 24 Signal Forms Checkout & Payment Component with Masked Card Preview and Confirmation Receipt.
+  - [ ] **S5-E7:** Automated unit and integration verification.
 
 ### 🧩 Slice 6: Customer Order History & Admin Order Fulfillment
 - **Status:** `QUEUED`
@@ -161,5 +164,6 @@
 | `2026-10-05` | Auth | Email Verification / Activation required | User answer Q1.4: account activation link required | APPROVED |
 | `2026-10-05` | Cart | Guest cart with login sync | User answer Q1.2: allow visitors to add items locally | APPROVED |
 | `2026-10-05` | Checkout | Payment Emulation & Card Validation | User requirement: Luhn algorithm check, expiry, CVV | APPROVED |
-| `2026-10-05` | Admin | Added Admin Physical Supplies (Slice 3) | User question: confirm admin support for supplies | PENDING APPROVAL |
-| `2026-10-05` | Accounting | Added Accounting & Reports (Slice 7) | User requirement: sales & inventory per day, week, month | PENDING APPROVAL |
+| `2026-10-05` | Admin | Added Admin Physical Supplies (Slice 3) | User question: confirm admin support for supplies | APPROVED |
+| `2026-10-05` | Accounting | Added Accounting & Reports (Slice 7) | User requirement: sales & inventory per day, week, month | APPROVED |
+| `2026-10-05` | Cart | Slice 4 Shopping Cart Implemented | V7 migration, Cart entity, CartService, CartStore, CartDrawer | COMPLETED |

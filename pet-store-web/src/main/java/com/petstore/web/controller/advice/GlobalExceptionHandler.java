@@ -74,6 +74,15 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class})
+    public ProblemDetail handleBadRequestExceptions(RuntimeException ex, HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("Bad Request");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
     @ExceptionHandler(StorageException.class)
     public ProblemDetail handleStorageException(StorageException ex, HttpServletRequest request) {
         log.error("Storage error processing request: {}", request.getRequestURI(), ex);

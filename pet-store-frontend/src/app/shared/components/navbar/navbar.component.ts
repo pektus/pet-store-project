@@ -2,6 +2,7 @@ import { Component, inject, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthStore } from '../../../core/stores/auth.store';
+import { CartStore } from '../../../core/stores/cart.store';
 
 @Component({
   selector: 'app-navbar',
@@ -17,7 +18,10 @@ import { AuthStore } from '../../../core/stores/auth.store';
 
         <nav class="nav-links">
           <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">
-            Catalog
+            Adopt Pets
+          </a>
+          <a routerLink="/supplies" routerLinkActive="active" class="nav-link">
+            Pet Supplies
           </a>
           @if (authStore.isAdmin()) {
             <a routerLink="/admin/inventory" routerLinkActive="active" class="nav-link">
@@ -27,6 +31,14 @@ import { AuthStore } from '../../../core/stores/auth.store';
         </nav>
 
         <div class="nav-actions">
+          <button class="cart-trigger-btn" (click)="cartStore.openDrawer()" aria-label="Open Shopping Cart">
+            <span class="cart-icon">&#128722;</span>
+            <span class="cart-label">Cart</span>
+            @if (cartStore.totalCount() > 0) {
+              <span class="cart-badge">{{ cartStore.totalCount() }}</span>
+            }
+          </button>
+
           @if (authStore.isAuthenticated()) {
             <span class="user-greeting">
               Hello, <strong>{{ authStore.currentUser()?.fullName || authStore.currentUser()?.username }}</strong>
@@ -135,9 +147,45 @@ import { AuthStore } from '../../../core/stores/auth.store';
       background: #f1f5f9;
       border-color: var(--text-muted);
     }
+    .cart-trigger-btn {
+      position: relative;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.375rem 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.15s ease;
+      color: var(--text-main);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    .cart-trigger-btn:hover {
+      background: #f1f5f9;
+      border-color: var(--primary);
+    }
+    .cart-icon {
+      font-size: 1.1rem;
+    }
+    .cart-label {
+      font-size: 0.875rem;
+    }
+    .cart-badge {
+      background: var(--primary);
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.1rem 0.45rem;
+      border-radius: 9999px;
+      min-width: 1.25rem;
+      text-align: center;
+    }
   `]
 })
 export class NavbarComponent {
   readonly authStore = inject(AuthStore);
+  readonly cartStore = inject(CartStore);
   readonly openLogin = output<void>();
 }

@@ -43,6 +43,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/auth/verify").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/pets/**", "/api/supplies/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/media/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/cart/sync").authenticated()
+                        .requestMatchers("/api/cart/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                         .requestMatchers("/api/customer/**").authenticated()
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")

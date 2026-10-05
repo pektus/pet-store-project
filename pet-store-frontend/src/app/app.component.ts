@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { LoginDialogComponent } from './features/auth/login-dialog/login-dialog.component';
+import { CartDrawerComponent } from './features/cart/cart-drawer.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, NavbarComponent, LoginDialogComponent],
+  imports: [CommonModule, RouterOutlet, NavbarComponent, LoginDialogComponent, CartDrawerComponent],
   template: `
     <div class="app-layout">
       <app-navbar (openLogin)="isLoginOpen.set(true)" />
@@ -26,6 +27,9 @@ import { LoginDialogComponent } from './features/auth/login-dialog/login-dialog.
       <app-login-dialog 
         [isOpen]="isLoginOpen()" 
         (close)="isLoginOpen.set(false)" />
+
+      <!-- Global Shopping Cart Drawer -->
+      <app-cart-drawer />
     </div>
   `,
   styles: [`

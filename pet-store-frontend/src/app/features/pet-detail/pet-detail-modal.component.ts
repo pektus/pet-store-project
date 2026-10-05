@@ -3,6 +3,7 @@ import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { PetService } from '../../core/services/pet.service';
 import { PetDetail } from '../../core/models/pet.model';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { CartStore } from '../../core/stores/cart.store';
 
 @Component({
   selector: 'app-pet-detail-modal',
@@ -63,6 +64,13 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 
           <div class="modal-footer">
             <button class="btn btn-secondary" (click)="close.emit()">Close</button>
+            @if (pet()?.status === 'AVAILABLE') {
+              <button class="btn btn-primary" 
+                      [disabled]="cartStore.isPetInCart(pet()!.id)"
+                      (click)="adoptPet(pet()!)">
+                {{ cartStore.isPetInCart(pet()!.id) ? 'In Cart' : 'Adopt (Add to Cart)' }}
+              </button>
+            }
           </div>
         </div>
       </div>
@@ -165,12 +173,17 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 })
 export class PetDetailModalComponent {
   private readonly petService = inject(PetService);
+  readonly cartStore = inject(CartStore);
 
   readonly petId = input<number | null>(null);
   readonly close = output<void>();
 
   readonly pet = signal<PetDetail | null>(null);
   readonly isLoading = signal<boolean>(false);
+
+  adoptPet(pet: PetDetail): void {
+    this.cartStore.addItem('PET', pet.id, 1);
+  }
 
   constructor() {
     effect(() => {
