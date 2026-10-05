@@ -40,7 +40,7 @@
 
 | Slice ID | Slice Title | Assigned Focus | PAVE Stage | Slice Status | Dependencies |
 | :---: | :--- | :--- | :---: | :---: | :--- |
-| **Slice 1** | **Customer Identity & Registration** | Auth, Email Verification, JWT, Angular 24 Signal Forms Reg | `[P] PLAN` | `READY FOR PLANNING` | Base `app_users` table |
+| **Slice 1** | **Customer Identity & Registration** | Auth, Email Verification, JWT, Angular 24 Signal Forms Reg | `[V] VALIDATE` | `AWAITING APPROVAL` | Base `app_users` table |
 | **Slice 2** | **Pet Search & Discovery (Type & Breed)** | Scoped Taxonomy, Faceted Search API, Signal Forms Filter | `[P] PLAN` | `QUEUED` | `pets`, `categories` |
 | **Slice 3** | **Shopping Cart Management** | Cart DB Schema (`SINGLE` vs `MULTIPLE`), Cart API, Guest Sync, Signal Cart | `[P] PLAN` | `QUEUED` | Slice 1 (`app_users`), `pets` |
 | **Slice 4** | **Checkout & Inventory Reservation** | Order DB Schema, Concurrency Lock, Atomic Checkout, Signal Forms Checkout | `[P] PLAN` | `QUEUED` | Slice 1, Slice 3 |
@@ -51,11 +51,11 @@
 ## 4. Granular Slice Tracking & Task Backlog
 
 ### 🧩 Slice 1: Customer Identity & Registration
-- **Status:** `READY FOR [P] PLAN`
-- **PAVE Loop State:** `[P]`
+- **Status:** `AWAITING [V] HUMAN APPROVAL`
+- **PAVE Loop State:** `[V]`
 - **Tasks:**
-  - [ ] **S1-P1:** Draft Slice Specification & Technical Contract (`aidlc-docs/slices/slice-1-registration.md`).
-  - [ ] **S1-A1:** Clarification questions (if any) formatted in slice markdown file.
+  - [x] **S1-P1:** Draft Slice Specification & Technical Contract (`aidlc-docs/slices/slice-1-registration.md`).
+  - [x] **S1-A1:** Clarification questions (if any) formatted in slice markdown file.
   - [ ] **S1-V1:** Slice Human Approval Gate.
   - [ ] **S1-E1:** Database Migration: `app_users` email verification & role updates.
   - [ ] **S1-E2:** Domain & DTOs (`UserRegistrationRequest`, `EmailVerificationResponse`, `CustomerProfileDTO`).
