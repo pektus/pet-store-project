@@ -514,7 +514,7 @@ export class CheckoutComponent implements OnInit {
   readonly computedTotal = computed(() => +(this.computedSubtotal() + this.computedShipping() + this.computedTax()).toFixed(2));
 
   // Payment Form Computed Validations
-  readonly cleanedCardNumber = computed(() => this.cardNumber().replace(/\D/g, ''));
+  readonly cleanedCardNumber = computed(() => (this.cardNumber() ?? '').replace(/\D/g, ''));
   readonly detectedBrand = computed(() => this.detectCardBrand(this.cleanedCardNumber()));
 
   readonly isCardValid = computed(() => {
