@@ -41,10 +41,12 @@
 | Slice ID | Slice Title | Assigned Focus | PAVE Stage | Slice Status | Dependencies |
 | :---: | :--- | :--- | :---: | :---: | :--- |
 | **Slice 1** | **Customer Identity & Registration** | Auth, Email Verification, JWT, Angular 24 Signal Forms Reg | `[V] VALIDATE` | `AWAITING APPROVAL` | Base `app_users` table |
-| **Slice 2** | **Pet Search & Discovery (Type & Breed)** | Scoped Taxonomy, Faceted Search API, Signal Forms Filter | `[P] PLAN` | `QUEUED` | `pets`, `categories` |
-| **Slice 3** | **Shopping Cart Management** | Cart DB Schema (`SINGLE` vs `MULTIPLE`), Cart API, Guest Sync, Signal Cart | `[P] PLAN` | `QUEUED` | Slice 1 (`app_users`), `pets` |
-| **Slice 4** | **Checkout & Inventory Reservation** | Order DB Schema, Concurrency Lock, Atomic Checkout, Signal Forms Checkout | `[P] PLAN` | `QUEUED` | Slice 1, Slice 3 |
-| **Slice 5** | **Order History & Admin Fulfillment** | Customer History API, Admin Order Dashboard, Signal Forms Filter | `[P] PLAN` | `QUEUED` | Slice 4 |
+| **Slice 2** | **Pet & Supply Search & Exploration** | Multi-Criteria Search API, Scoped Taxonomy, Signal Forms Search | `[P] PLAN` | `QUEUED` | `pets`, `supplies`, `categories` |
+| **Slice 3** | **Admin Physical Supply Management** | Supplies CRUD, Stock Replenishment, Low-Stock Alerts, Signal Form | `[P] PLAN` | `QUEUED` | Flyway V5 (`supplies`) |
+| **Slice 4** | **Shopping Cart Management** | Cart DB Schema (`PET` vs `SUPPLY`), Cart API, Guest Sync, Signal Cart | `[P] PLAN` | `QUEUED` | Slice 1 (`app_users`), `pets`, `supplies` |
+| **Slice 5** | **Checkout & Inventory Reservation** | Order DB Schema, Concurrency Lock, Atomic Checkout, Signal Forms Checkout | `[P] PLAN` | `QUEUED` | Slice 1, Slice 3, Slice 4 |
+| **Slice 6** | **Order History & Admin Fulfillment** | Customer History API, Admin Order Dashboard, Signal Forms Filter | `[P] PLAN` | `QUEUED` | Slice 5 |
+| **Slice 7** | **Accounting & Analytics Reporting** | Financial Ledger, Daily/Weekly/Monthly Sales & Inventory Reports, Export | `[P] PLAN` | `QUEUED` | Slice 3, Slice 5, Slice 6 |
 
 ---
 
@@ -65,49 +67,72 @@
   - [ ] **S1-E6:** Reactive Auth Store & Navigation: Signals for user session state.
   - [ ] **S1-E7:** Slice Verification & Automated Tests.
 
-### 🧩 Slice 2: Pet Search & Discovery by Type and Breed
+### 🧩 Slice 2: Pet & Supply Search & Exploration
 - **Status:** `QUEUED`
 - **PAVE Loop State:** `NOT STARTED`
 - **Tasks:**
   - [ ] **S2-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-2-search.md`).
-  - [ ] **S2-E1:** Flyway Indexing Migration on `(category_id, breed)`.
-  - [ ] **S2-E2:** Scoped Breed Taxonomy Endpoint (`GET /api/pets/breeds?category={type}`).
-  - [ ] **S2-E3:** Enhanced Search Specification with Case-Insensitive Matching.
+  - [ ] **S2-E1:** Flyway Indexing Migration on `(category_id, breed)` and search text vectors.
+  - [ ] **S2-E2:** Multi-Criteria Search API (`/api/catalog/search`).
+  - [ ] **S2-E3:** Scoped Breed Taxonomy Endpoint (`GET /api/pets/breeds?category={type}`).
   - [ ] **S2-E4:** Angular 24 Signal Forms Search Component with Debounced Signals.
-  - [ ] **S2-E5:** Reactive Breed Dropdown Scoped to Category Signal.
+  - [ ] **S2-E5:** Reactive Scoped Breed Filter & URL Query Param Sync.
 
-### 🧩 Slice 3: Shopping Cart Management
+### 🧩 Slice 3: Admin Catalog & Physical Supply Management
 - **Status:** `QUEUED`
 - **PAVE Loop State:** `NOT STARTED`
 - **Tasks:**
-  - [ ] **S3-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-3-cart.md`).
-  - [ ] **S3-E1:** Flyway Migration: `carts`, `cart_items` with item tagging & check constraint.
-  - [ ] **S3-E2:** Cart JPA Entities & Repositories (`Cart`, `CartItem`).
-  - [ ] **S3-E3:** Cart Service: Add/update/remove with `SINGLE` pet vs `MULTIPLE` supply rules.
-  - [ ] **S3-E4:** Cart REST API endpoints (`GET`, `POST`, `PUT`, `DELETE`).
-  - [ ] **S3-E5:** Guest Cart Synchronization Endpoint (`POST /api/cart/sync`).
-  - [ ] **S3-E6:** Angular 24 Signal-First Cart Service & Cart Drawer Component.
+  - [ ] **S3-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-3-supplies.md`).
+  - [ ] **S3-E1:** Flyway Migration: `supplies` table with SKU, category, price, stock, threshold.
+  - [ ] **S3-E2:** Physical Supply Entity & Repository (`Supply`, `SupplyRepository`).
+  - [ ] **S3-E3:** Admin Supply CRUD & Stock Replenishment Service & REST Controller.
+  - [ ] **S3-E4:** Angular 24 Signal Forms Admin Supply Form Component.
+  - [ ] **S3-E5:** Angular 24 Admin Supply Inventory Table with Low-Stock Badges.
 
-### 🧩 Slice 4: Checkout, Inventory Reservation & Order Processing
+### 🧩 Slice 4: Shopping Cart Management
 - **Status:** `QUEUED`
 - **PAVE Loop State:** `NOT STARTED`
 - **Tasks:**
-  - [ ] **S4-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-4-checkout.md`).
-  - [ ] **S4-E1:** Flyway Migration: `orders`, `order_items` tables.
-  - [ ] **S4-E2:** Order JPA Entities & Repositories (`Order`, `OrderItem`).
-  - [ ] **S4-E3:** Atomic Checkout Service with Concurrency Locking & Pet State Transition (`AVAILABLE` -> `PENDING`).
-  - [ ] **S4-E4:** Checkout REST API (`POST /api/checkout`).
-  - [ ] **S4-E5:** Angular 24 Signal Forms Checkout Component & Order Receipt.
+  - [ ] **S4-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-4-cart.md`).
+  - [ ] **S4-E1:** Flyway Migration: `carts`, `cart_items` (`PET` single lock vs `SUPPLY` multi-quantity).
+  - [ ] **S4-E2:** Cart JPA Entities & Repositories (`Cart`, `CartItem`).
+  - [ ] **S4-E3:** Cart Service & REST API endpoints (`GET`, `POST`, `PUT`, `DELETE`).
+  - [ ] **S4-E4:** Guest Cart Synchronization Endpoint (`POST /api/cart/sync`).
+  - [ ] **S4-E5:** Angular 24 Signal-First Cart Service & Cart Drawer Component.
 
-### 🧩 Slice 5: Customer Order History & Admin Order Fulfillment
+### 🧩 Slice 5: Checkout, Inventory Reservation & Order Processing
 - **Status:** `QUEUED`
 - **PAVE Loop State:** `NOT STARTED`
 - **Tasks:**
-  - [ ] **S5-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-5-orders.md`).
-  - [ ] **S5-E1:** Order History API for Customer & Admin.
-  - [ ] **S5-E2:** Order Status Transition API for Admin.
-  - [ ] **S5-E3:** Angular 24 Customer "My Orders" View.
-  - [ ] **S5-E4:** Angular 24 Admin Order Management Dashboard with Signal Forms Filter.
+  - [ ] **S5-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-5-checkout.md`).
+  - [ ] **S5-E1:** Flyway Migration: `orders`, `order_items` tables with payment and masked card columns.
+  - [ ] **S5-E2:** Order JPA Entities & Repositories (`Order`, `OrderItem`).
+  - [ ] **S5-E3:** Payment Emulation Service with Card Validation (Luhn check, expiry check, CVV check, decline simulation).
+  - [ ] **S5-E4:** Atomic Checkout Service with Pet Locking, Supply Stock Decrement, and Simulated Authorization.
+  - [ ] **S5-E5:** Checkout REST API (`POST /api/checkout`).
+  - [ ] **S5-E6:** Angular 24 Signal Forms Checkout & Payment Component with Real-Time Card Validation & Order Receipt.
+
+### 🧩 Slice 6: Customer Order History & Admin Order Fulfillment
+- **Status:** `QUEUED`
+- **PAVE Loop State:** `NOT STARTED`
+- **Tasks:**
+  - [ ] **S6-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-6-orders.md`).
+  - [ ] **S6-E1:** Order History API for Customer & Admin.
+  - [ ] **S6-E2:** Order Status Transition API for Admin (`CONFIRMED`, `CANCELLED`, `COMPLETED`).
+  - [ ] **S6-E3:** Angular 24 Customer "My Orders" View.
+  - [ ] **S6-E4:** Angular 24 Admin Order Management Dashboard with Signal Forms Filter.
+
+### 🧩 Slice 7: Accounting, Financial Reporting & Sales/Inventory Analytics
+- **Status:** `QUEUED`
+- **PAVE Loop State:** `NOT STARTED`
+- **Tasks:**
+  - [ ] **S7-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-7-accounting.md`).
+  - [ ] **S7-E1:** Flyway Migration: `accounting_ledger` table with transaction refs and timestamps.
+  - [ ] **S7-E2:** Financial Ledger Entity, Repository, and Automated Posting Engine.
+  - [ ] **S7-E3:** Sales Analytics Aggregation API (`daily`, `weekly`, `monthly`).
+  - [ ] **S7-E4:** Inventory Analytics Aggregation API (`daily`, `weekly`, `monthly`).
+  - [ ] **S7-E5:** CSV Export REST Endpoints.
+  - [ ] **S7-E6:** Angular 24 Signal Forms Analytics Dashboard with Period Switches (`Day`, `Week`, `Month`).
 
 ---
 
@@ -122,4 +147,6 @@
 | `2026-10-05` | Domain | Item Tagging: Pet Single vs Supply Multiple | User answer Q1.1: pets single, supplies multiple quantity | APPROVED |
 | `2026-10-05` | Auth | Email Verification / Activation required | User answer Q1.4: account activation link required | APPROVED |
 | `2026-10-05` | Cart | Guest cart with login sync | User answer Q1.2: allow visitors to add items locally | APPROVED |
-| `2026-10-05` | Checkout | Simulated Payment Gateway for MVP | User answer Q1.3: in-store pickup / demo payment | APPROVED |
+| `2026-10-05` | Checkout | Payment Emulation & Card Validation | User requirement: Luhn algorithm check, expiry, CVV | APPROVED |
+| `2026-10-05` | Admin | Added Admin Physical Supplies (Slice 3) | User question: confirm admin support for supplies | PENDING APPROVAL |
+| `2026-10-05` | Accounting | Added Accounting & Reports (Slice 7) | User requirement: sales & inventory per day, week, month | PENDING APPROVAL |
