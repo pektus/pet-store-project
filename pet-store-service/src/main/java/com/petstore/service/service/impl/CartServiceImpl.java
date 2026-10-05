@@ -65,14 +65,11 @@ public class CartServiceImpl implements CartService {
                 throw new IllegalStateException("Pet " + pet.getName() + " is not available for purchase (Status: " + pet.getStatus() + ")");
             }
 
-            if (cartItemRepository.findByCartAndPetId(cart, pet.getId()).isPresent()) {
-                throw new IllegalStateException("Pet " + pet.getName() + " is already in your cart");
+            if (cartItemRepository.findByCartAndPetId(cart, pet.getId()).isEmpty()) {
+                CartItem cartItem = new CartItem(cart, CartItemType.PET, pet, null, 1, pet.getPrice());
+                cart.addItem(cartItem);
+                cartItemRepository.save(cartItem);
             }
-
-            CartItem cartItem = new CartItem(cart, CartItemType.PET, pet, null, 1, pet.getPrice());
-            cart.addItem(cartItem);
-            cartItemRepository.save(cartItem);
-
         } else if (request.getItemType() == CartItemType.SUPPLY) {
             Supply supply = supplyRepository.findById(request.getItemId())
                     .orElseThrow(() -> new ResourceNotFoundException("Supply not found with ID: " + request.getItemId()));

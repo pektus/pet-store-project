@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { AuthResponse, CustomerProfileUpdateRequest, CustomerRegistrationRequest, LoginRequest, RegistrationResponse, UserProfile, VerifyEmailResponse } from '../models/user.model';
@@ -12,7 +12,7 @@ const USER_KEY = 'petstore_user_profile';
 })
 export class AuthStore {
   private readonly http = inject(HttpClient);
-  private readonly cartStore = inject(CartStore);
+  private readonly injector = inject(Injector);
 
   readonly token = signal<string | null>(this.getInitialToken());
   readonly currentUser = signal<UserProfile | null>(this.getInitialUser());
@@ -73,7 +73,7 @@ export class AuthStore {
     localStorage.removeItem(USER_KEY);
     this.token.set(null);
     this.currentUser.set(null);
-    this.cartStore.loadCart();
+    this.injector.get(CartStore).loadCart();
   }
 
   fetchCurrentUser(): Observable<UserProfile> {
@@ -91,7 +91,7 @@ export class AuthStore {
     this.token.set(token);
     this.currentUser.set(user);
     this.closeLogin();
-    this.cartStore.syncGuestCartOnLogin();
+    this.injector.get(CartStore).syncGuestCartOnLogin();
   }
 
   private getInitialToken(): string | null {

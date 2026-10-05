@@ -118,18 +118,23 @@ class CartServiceImplTest {
     }
 
     @Test
-    @DisplayName("Should throw IllegalStateException when pet is already in cart")
-    void addItem_Pet_AlreadyInCart_ThrowsException() {
+    @DisplayName("Should return the existing cart when pet is already in cart")
+    void addItem_Pet_AlreadyInCart_ReturnsExistingCart() {
         AddToCartRequest request = new AddToCartRequest(CartItemType.PET, 101L, 1);
         CartItem existingItem = new CartItem(testCart, CartItemType.PET, testPet, null, 1, testPet.getPrice());
+        existingItem.setId(301L);
+        testCart.addItem(existingItem);
 
         when(cartRepository.findByUserWithItems(testUser)).thenReturn(Optional.of(testCart));
         when(petRepository.findById(101L)).thenReturn(Optional.of(testPet));
         when(cartItemRepository.findByCartAndPetId(testCart, 101L)).thenReturn(Optional.of(existingItem));
 
-        assertThatThrownBy(() -> cartService.addItem(testUser, null, request))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("already in your cart");
+        CartResponseDTO response = cartService.addItem(testUser, null, request);
+
+        assertThat(response.getItems()).hasSize(1);
+        assertThat(response.getItems().get(0).getId()).isEqualTo(301L);
+        assertThat(response.getTotalItems()).isEqualTo(1);
+        verify(cartItemRepository, never()).save(any(CartItem.class));
     }
 
     @Test

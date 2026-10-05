@@ -1,4 +1,4 @@
-import { Component, computed, inject, model, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -484,21 +484,21 @@ export class CheckoutComponent implements OnInit {
   private readonly checkoutService = inject(CheckoutService);
   private readonly router = inject(Router);
 
-  // Exclusive Signal Models for Shipping Address
-  readonly recipientName = model<string>('');
-  readonly recipientPhone = model<string>('');
-  readonly shippingAddress1 = model<string>('');
-  readonly shippingAddress2 = model<string>('');
-  readonly shippingCity = model<string>('');
-  readonly shippingState = model<string>('');
-  readonly shippingPostalCode = model<string>('');
+  // Shipping Address Form State
+  readonly recipientName = signal<string>('');
+  readonly recipientPhone = signal<string>('');
+  readonly shippingAddress1 = signal<string>('');
+  readonly shippingAddress2 = signal<string>('');
+  readonly shippingCity = signal<string>('');
+  readonly shippingState = signal<string>('');
+  readonly shippingPostalCode = signal<string>('');
 
-  // Exclusive Signal Models for Payment
-  readonly cardholderName = model<string>('');
-  readonly cardNumber = model<string>('');
-  readonly expiryMonth = model<string>('');
-  readonly expiryYear = model<string>('');
-  readonly cvv = model<string>('');
+  // Payment Form State
+  readonly cardholderName = signal<string>('');
+  readonly cardNumber = signal<string>('');
+  readonly expiryMonth = signal<string>('');
+  readonly expiryYear = signal<string>('');
+  readonly cvv = signal<string>('');
 
   // Status signals
   readonly isSubmitting = signal<boolean>(false);
@@ -572,7 +572,7 @@ export class CheckoutComponent implements OnInit {
   }
 
   onCardNumberChange(val: string): void {
-    const cleaned = val.replace(/\D/g, '');
+    const cleaned = (val ?? '').replace(/\D/g, '');
     const formatted = cleaned.match(/.{1,4}/g)?.join(' ') ?? cleaned;
     this.cardNumber.set(formatted);
   }
