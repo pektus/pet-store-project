@@ -45,8 +45,8 @@
 | :---: | :--- | :--- | :---: | :---: | :--- |
 | **Slice 1** | **Customer Identity & Registration** | Auth, Email Verification, JWT, Angular 24 Signal Forms Reg | `[E] EXECUTE` | `COMPLETED` | Base `app_users` table |
 | **Slice 2** | **Pet & Supply Search & Exploration** | Multi-Criteria Search API, Scoped Taxonomy, Signal Forms Search | `[E] EXECUTE` | `COMPLETED` | `pets`, `supplies`, `categories` |
-| **Slice 3** | **Admin Physical Supply Management** | Supplies CRUD, Stock Replenishment, Low-Stock Alerts, Signal Form | `[P] PLAN` | `ACTIVE IN-FLIGHT` | Flyway V6 (`supplies`) |
-| **Slice 4** | **Shopping Cart Management** | Cart DB Schema (`PET` vs `SUPPLY`), Cart API, Guest Sync, Signal Cart | `[P] PLAN` | `QUEUED` | Slice 1 (`app_users`), `pets`, `supplies` |
+| **Slice 3** | **Admin Physical Supply Management** | Supplies CRUD, Stock Replenishment, Low-Stock Alerts, Signal Form | `[E] EXECUTE` | `COMPLETED` | Flyway V6 (`supplies`) |
+| **Slice 4** | **Shopping Cart Management** | Cart DB Schema (`PET` vs `SUPPLY`), Cart API, Guest Sync, Signal Cart | `[P] PLAN` | `ACTIVE IN-FLIGHT` | Slice 1 (`app_users`), `pets`, `supplies` |
 | **Slice 5** | **Checkout & Inventory Reservation** | Order DB Schema, Concurrency Lock, Atomic Checkout, Signal Forms Checkout | `[P] PLAN` | `QUEUED` | Slice 1, Slice 3, Slice 4 |
 | **Slice 6** | **Order History & Admin Fulfillment** | Customer History API, Admin Order Dashboard, Signal Forms Filter | `[P] PLAN` | `QUEUED` | Slice 5 |
 | **Slice 7** | **Accounting & Analytics Reporting** | Financial Ledger, Daily/Weekly/Monthly Sales & Inventory Reports, Export | `[P] PLAN` | `QUEUED` | Slice 3, Slice 5, Slice 6 |
@@ -86,29 +86,32 @@
   - [x] **S2-E6:** Automated backend and frontend unit tests (26/26 tests passing, Angular build passing).
 
 ### 🧩 Slice 3: Admin Catalog & Physical Supply Management
+- **Status:** `COMPLETED`
+- **PAVE Loop State:** `[E]`
+- **Tasks:**
+  - [x] **S3-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-3-supplies.md`).
+  - [x] **S3-A1:** Target questions & technical decisions in slice markdown file (auto-SKU, 5-unit threshold).
+  - [x] **S3-V1:** Slice 3 Human Approval Gate.
+  - [x] **S3-E1:** Flyway Migration: `V6__create_supplies_table.sql` with SKU, category, price, stock, threshold, item_type `MULTIPLE`.
+  - [x] **S3-E2:** Physical Supply Entity & Repository (`Supply`, `SupplyRepository`).
+  - [x] **S3-E3:** Admin Supply CRUD & Stock Replenishment Service (`SupplyService`, `SupplyServiceImpl`, 7/7 unit tests).
+  - [x] **S3-E4:** REST Endpoints & Security: `SupplyController` (public `/api/supplies` and admin `/api/admin/supplies`).
+  - [x] **S3-E5:** Angular 24 Signal Forms Admin Supply Form Component & Admin Supply Inventory Component with Stock Badges.
+  - [x] **S3-E6:** Automated backend and frontend unit tests (33/33 tests passing, production Angular build passing).
+
+### 🧩 Slice 4: Shopping Cart Management
 - **Status:** `ACTIVE IN-FLIGHT`
 - **PAVE Loop State:** `[P] PLAN`
 - **Tasks:**
-  - [ ] **S3-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-3-supplies.md`).
-  - [ ] **S3-A1:** Target questions & technical decisions in slice markdown file.
-  - [ ] **S3-V1:** Slice 3 Human Approval Gate.
-  - [ ] **S3-E1:** Flyway Migration: `V6__create_supplies_table.sql` with SKU, category, price, stock, threshold, item_type `MULTIPLE`.
-  - [ ] **S3-E2:** Physical Supply Entity & Repository (`Supply`, `SupplyRepository`).
-  - [ ] **S3-E3:** Admin Supply CRUD & Stock Replenishment Service & REST Controller (`/api/admin/supplies`).
-  - [ ] **S3-E4:** Angular 24 Signal Forms Admin Supply Form Component.
-  - [ ] **S3-E5:** Angular 24 Admin Supply Inventory Table with Low-Stock Badges.
-  - [ ] **S3-E6:** Automated backend and frontend unit tests.
-
-### 🧩 Slice 4: Shopping Cart Management
-- **Status:** `QUEUED`
-- **PAVE Loop State:** `NOT STARTED`
-- **Tasks:**
   - [ ] **S4-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-4-cart.md`).
+  - [ ] **S4-A1:** Target questions & technical decisions in slice markdown file.
+  - [ ] **S4-V1:** Slice 4 Human Approval Gate.
   - [ ] **S4-E1:** Flyway Migration: `carts`, `cart_items` (`PET` single lock vs `SUPPLY` multi-quantity).
   - [ ] **S4-E2:** Cart JPA Entities & Repositories (`Cart`, `CartItem`).
   - [ ] **S4-E3:** Cart Service & REST API endpoints (`GET`, `POST`, `PUT`, `DELETE`).
   - [ ] **S4-E4:** Guest Cart Synchronization Endpoint (`POST /api/cart/sync`).
   - [ ] **S4-E5:** Angular 24 Signal-First Cart Service & Cart Drawer Component.
+  - [ ] **S4-E6:** Automated backend and frontend unit tests.
 
 ### 🧩 Slice 5: Checkout, Inventory Reservation & Order Processing
 - **Status:** `QUEUED`

@@ -3,10 +3,10 @@ import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PetService } from '../../../core/services/pet.service';
 import { PetDetail, PetStatus, PetSummary } from '../../../core/models/pet.model';
-import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { AdminPetFormComponent } from '../pet-form/admin-pet-form.component';
+import { AdminSupplyInventoryComponent } from '../supply-inventory/admin-supply-inventory.component';
 
 @Component({
   selector: 'app-admin-inventory',
@@ -16,170 +16,203 @@ import { AdminPetFormComponent } from '../pet-form/admin-pet-form.component';
     FormsModule,
     CurrencyPipe,
     DatePipe,
-    StatusBadgeComponent,
     PaginationComponent,
     ConfirmationModalComponent,
-    AdminPetFormComponent
+    AdminPetFormComponent,
+    AdminSupplyInventoryComponent
   ],
   template: `
     <div class="inventory-page container">
-      <div class="page-header">
-        <div>
-          <h2>Store Inventory Management</h2>
-          <p class="subtitle">Maintain pet profiles, track lifecycle status, and manage listings</p>
-        </div>
-        <button class="btn btn-primary" (click)="openAddModal()">
-          + Add New Pet
+      <!-- Admin Inventory Tab Selector -->
+      <div class="admin-tabs">
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab() === 'pets'" 
+          (click)="activeTab.set('pets')">
+          &#128062; Pets Inventory
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab() === 'supplies'" 
+          (click)="activeTab.set('supplies')">
+          &#128230; Physical Merchandise & Supplies
         </button>
       </div>
 
-      <!-- Filter Controls Bar -->
-      <div class="control-bar">
-        <div class="filter-group">
-          <label>Filter by Status:</label>
-          <select [ngModel]="selectedStatus()" (ngModelChange)="onStatusFilterChange($event)">
-            <option value="">All Statuses</option>
-            <option value="AVAILABLE">AVAILABLE</option>
-            <option value="PENDING">PENDING</option>
-            <option value="ADOPTED">ADOPTED</option>
-          </select>
+      @if (activeTab() === 'pets') {
+        <!-- Pets Inventory Section -->
+        <div class="page-header">
+          <div>
+            <h2>Pet Profiles & Adoption Inventory</h2>
+            <p class="subtitle">Maintain individual pet profiles, track lifecycle status, and manage listings</p>
+          </div>
+          <button class="btn btn-primary" (click)="openAddModal()">
+            + Add New Pet
+          </button>
         </div>
 
-        <div class="inventory-stats">
-          <span>Total Records: <strong>{{ totalElements() }}</strong></span>
-        </div>
-      </div>
+        <!-- Filter Controls Bar -->
+        <div class="control-bar">
+          <div class="filter-group">
+            <label>Filter by Status:</label>
+            <select [ngModel]="selectedStatus()" (ngModelChange)="onStatusFilterChange($event)">
+              <option value="">All Statuses</option>
+              <option value="AVAILABLE">AVAILABLE</option>
+              <option value="PENDING">PENDING</option>
+              <option value="ADOPTED">ADOPTED</option>
+            </select>
+          </div>
 
-      <!-- Inventory Table -->
-      <div class="table-container">
-        @if (isLoading()) {
-          <div class="loading-state">Loading inventory data...</div>
-        } @else if (pets().length === 0) {
-          <div class="empty-state">No inventory records found.</div>
-        } @else {
-          <table class="inventory-table">
-            <thead>
-              <tr>
-                <th>Pet</th>
-                <th>Category</th>
-                <th>Breed</th>
-                <th>Price</th>
-                <th>Status</th>
-                <th>Date Added</th>
-                <th>Lifecycle Actions</th>
-                <th>Manage</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (pet of pets(); track pet.id) {
+          <div class="inventory-stats">
+            <span>Total Records: <strong>{{ totalElements() }}</strong></span>
+          </div>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="table-container">
+          @if (isLoading()) {
+            <div class="loading-state">Loading inventory data...</div>
+          } @else if (pets().length === 0) {
+            <div class="empty-state">No inventory records found.</div>
+          } @else {
+            <table class="inventory-table">
+              <thead>
                 <tr>
-                  <td>
-                    <div class="pet-cell">
-                      @if (pet.photoUrl) {
-                        <img [src]="pet.photoUrl" alt="" class="avatar" />
-                      } @else {
-                        <div class="avatar-placeholder">&#128054;</div>
-                      }
-                      <span class="name">{{ pet.name }}</span>
-                    </div>
-                  </td>
-                  <td>{{ pet.category }}</td>
-                  <td>{{ pet.breed }}</td>
-                  <td class="price">{{ pet.price | currency }}</td>
-                  <td>
-                    <app-status-badge [status]="pet.status" />
-                  </td>
-                  <td>{{ pet.createdAt | date:'shortDate' }}</td>
-                  <td>
-                    <div class="status-actions">
-                      @if (pet.status === 'AVAILABLE') {
-                        <button 
-                          class="btn btn-secondary btn-sm" 
-                          (click)="changeStatus(pet.id, 'PENDING')">
-                          Set Pending
-                        </button>
-                        <button 
-                          class="btn btn-secondary btn-sm" 
-                          (click)="changeStatus(pet.id, 'ADOPTED')">
-                          Set Adopted
-                        </button>
-                      } @else if (pet.status === 'PENDING') {
-                        <button 
-                          class="btn btn-secondary btn-sm" 
-                          (click)="changeStatus(pet.id, 'AVAILABLE')">
-                          Set Available
-                        </button>
-                        <button 
-                          class="btn btn-secondary btn-sm" 
-                          (click)="changeStatus(pet.id, 'ADOPTED')">
-                          Set Adopted
-                        </button>
-                      } @else {
-                        <span class="status-locked">Finalized</span>
-                      }
-                    </div>
-                  </td>
-                  <td>
-                    <div class="row-actions">
+                  <th>Photo</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Breed</th>
+                  <th>Age</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Created At</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (pet of pets(); track pet.id) {
+                  <tr>
+                    <td class="photo-cell">
+                      <img 
+                        [src]="pet.photoUrl || '/assets/placeholder-pet.png'" 
+                        [alt]="pet.name" 
+                        class="thumb-img" 
+                        (error)="$any($event.target).src = 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2394a3b8%22 stroke-width=%221.5%22><rect width=%2218%22 height=%2218%22 x=%223%22 y=%223%22 rx=%222%22/><circle cx=%229%22 cy=%229%22 r=%222%22/><path d=%22m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21%22/></svg>'" />
+                    </td>
+                    <td class="name-cell">
+                      <strong>{{ pet.name }}</strong>
+                    </td>
+                    <td>
+                      <span class="category-pill">{{ pet.category }}</span>
+                    </td>
+                    <td>{{ pet.breed }}</td>
+                    <td>{{ pet.ageMonths }} mos</td>
+                    <td>{{ pet.price | currency }}</td>
+                    <td>
+                      <div class="status-dropdown-wrap">
+                        <select 
+                          [ngModel]="pet.status" 
+                          (ngModelChange)="changeStatus(pet.id, $event)"
+                          [disabled]="pet.status === 'ADOPTED'"
+                          class="status-select">
+                          <option value="AVAILABLE">AVAILABLE</option>
+                          <option value="PENDING">PENDING</option>
+                          <option value="ADOPTED">ADOPTED</option>
+                        </select>
+                      </div>
+                    </td>
+                    <td class="date-cell">{{ pet.createdAt | date:'shortDate' }}</td>
+                    <td class="actions-cell">
                       <button class="btn btn-secondary btn-sm" (click)="openEditModal(pet.id)">
                         Edit
                       </button>
                       <button class="btn btn-danger btn-sm" (click)="confirmDelete(pet)">
                         Delete
                       </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
 
-          <app-pagination 
-            [currentPage]="currentPage()" 
-            [totalPages]="totalPages()" 
-            (pageChange)="onPageChange($event)" />
-        }
-      </div>
+            <app-pagination 
+              [currentPage]="currentPage()" 
+              [totalPages]="totalPages()" 
+              (pageChange)="onPageChange($event)" />
+          }
+        </div>
 
-      <!-- Add/Edit Pet Modal Form -->
-      <app-admin-pet-form 
-        [isOpen]="isFormOpen()" 
-        [petToEdit]="petToEdit()" 
-        (close)="isFormOpen.set(false)" 
-        (saved)="loadInventory()" />
+        <!-- Add / Edit Modal -->
+        <app-admin-pet-form 
+          [isOpen]="isFormOpen()" 
+          [petToEdit]="petToEdit()" 
+          (close)="isFormOpen.set(false)" 
+          (saved)="loadInventory()" />
 
-      <!-- Delete Confirmation Modal -->
-      <app-confirmation-modal 
-        [isOpen]="isConfirmOpen()" 
-        title="Delete Pet Record" 
-        [message]="deletePromptMessage()" 
-        confirmText="Delete Pet" 
-        [isDestructive]="true" 
-        (confirmed)="executeDelete()" 
-        (cancelled)="isConfirmOpen.set(false)" />
+        <!-- Delete Confirmation Modal -->
+        <app-confirmation-modal 
+          [isOpen]="isConfirmOpen()" 
+          title="Delete Pet Record" 
+          [message]="deletePromptMessage()" 
+          confirmButtonText="Delete Pet"
+          (confirm)="executeDelete()" 
+          (cancel)="isConfirmOpen.set(false)" />
+      } @else {
+        <!-- Physical Supplies Section -->
+        <app-admin-supply-inventory />
+      }
     </div>
   `,
   styles: [`
     .inventory-page {
       padding-top: 2rem;
-      padding-bottom: 3rem;
+      padding-bottom: 4rem;
+    }
+    .admin-tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 2rem;
+    }
+    .tab-btn {
+      padding: 0.75rem 1.5rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border: none;
+      background: transparent;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .tab-btn:hover {
+      color: var(--primary);
+    }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
     }
     .page-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .page-header h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
     }
     .subtitle {
+      font-size: 0.875rem;
       color: var(--text-muted);
-      font-size: 0.9375rem;
     }
     .control-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
       background: #ffffff;
-      padding: 1rem 1.5rem;
+      padding: 1rem 1.25rem;
       border: 1px solid var(--border);
       border-radius: var(--radius);
       margin-bottom: 1.5rem;
@@ -190,14 +223,20 @@ import { AdminPetFormComponent } from '../pet-form/admin-pet-form.component';
       gap: 0.75rem;
     }
     .filter-group label {
-      font-size: 0.875rem;
-      font-weight: 500;
+      font-size: 0.8125rem;
+      font-weight: 600;
       color: var(--text-muted);
     }
     .filter-group select {
       padding: 0.4rem 0.75rem;
       border: 1px solid var(--border);
       border-radius: 6px;
+      background: #ffffff;
+      font-size: 0.875rem;
+    }
+    .inventory-stats {
+      font-size: 0.875rem;
+      color: var(--text-muted);
     }
     .table-container {
       background: #ffffff;
@@ -209,66 +248,60 @@ import { AdminPetFormComponent } from '../pet-form/admin-pet-form.component';
       width: 100%;
       border-collapse: collapse;
       text-align: left;
+      font-size: 0.875rem;
     }
     .inventory-table th {
-      background-color: #f8fafc;
-      padding: 0.875rem 1rem;
-      font-size: 0.75rem;
+      background: #f8fafc;
+      padding: 0.75rem 1rem;
       font-weight: 600;
       color: var(--text-muted);
-      text-transform: uppercase;
       border-bottom: 1px solid var(--border);
     }
     .inventory-table td {
-      padding: 0.875rem 1rem;
+      padding: 0.75rem 1rem;
       border-bottom: 1px solid var(--border);
-      font-size: 0.875rem;
       vertical-align: middle;
     }
-    .pet-cell {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
+    .photo-cell {
+      width: 56px;
     }
-    .avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 6px;
+    .thumb-img {
+      width: 44px;
+      height: 44px;
       object-fit: cover;
-    }
-    .avatar-placeholder {
-      width: 40px;
-      height: 40px;
       border-radius: 6px;
-      background: #e2e8f0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
+      border: 1px solid var(--border);
     }
-    .name {
-      font-weight: 600;
+    .name-cell strong {
       color: var(--text-main);
     }
-    .price {
-      font-weight: 600;
-      color: var(--primary);
-    }
-    .status-actions {
-      display: flex;
-      gap: 0.5rem;
-    }
-    .status-locked {
+    .category-pill {
       font-size: 0.75rem;
-      color: var(--text-muted);
-      font-style: italic;
+      background: #eef2ff;
+      color: var(--primary);
+      padding: 0.2rem 0.5rem;
+      border-radius: 9999px;
+      font-weight: 600;
     }
-    .row-actions {
+    .status-select {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: #ffffff;
+    }
+    .date-cell {
+      color: var(--text-muted);
+      font-size: 0.8125rem;
+    }
+    .actions-cell {
+      white-space: nowrap;
       display: flex;
       gap: 0.5rem;
     }
     .loading-state, .empty-state {
-      padding: 3rem;
+      padding: 4rem;
       text-align: center;
       color: var(--text-muted);
     }
@@ -277,6 +310,8 @@ import { AdminPetFormComponent } from '../pet-form/admin-pet-form.component';
 export class AdminInventoryComponent implements OnInit {
   private readonly petService = inject(PetService);
 
+  readonly activeTab = signal<'pets' | 'supplies'>('pets');
+
   readonly pets = signal<PetSummary[]>([]);
   readonly totalElements = signal<number>(0);
   readonly totalPages = signal<number>(0);
@@ -284,11 +319,9 @@ export class AdminInventoryComponent implements OnInit {
   readonly selectedStatus = signal<string>('');
   readonly isLoading = signal<boolean>(false);
 
-  // Form Modal Signals
   readonly isFormOpen = signal<boolean>(false);
   readonly petToEdit = signal<PetDetail | null>(null);
 
-  // Confirmation Modal Signals
   readonly isConfirmOpen = signal<boolean>(false);
   readonly petToDelete = signal<PetSummary | null>(null);
   readonly deletePromptMessage = signal<string>('');
