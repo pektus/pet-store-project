@@ -25,7 +25,6 @@ export const routes: Routes = [
   {
     path: 'checkout',
     component: CheckoutComponent,
-    canActivate: [authGuard],
     title: 'PetStore - Secure Checkout'
   },
   {
