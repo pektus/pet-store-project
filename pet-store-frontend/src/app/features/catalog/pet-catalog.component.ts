@@ -1,6 +1,7 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CatalogStore } from '../../core/stores/catalog.store';
 import { PetCardComponent } from './components/pet-card.component';
 import { PetListRowComponent } from './components/pet-list-row.component';
@@ -28,8 +29,8 @@ import { PetDetailModalComponent } from '../pet-detail/pet-detail-modal.componen
             <input 
               type="text" 
               placeholder="Search pets by name, breed, description..." 
-              [ngModel]="store.searchTerm()" 
-              (ngModelChange)="store.setSearch($event)"
+              [ngModel]="store.rawSearchInput()" 
+              (ngModelChange)="store.onSearchInput($event)"
               class="search-input" />
           </div>
 
@@ -89,13 +90,13 @@ import { PetDetailModalComponent } from '../pet-detail/pet-detail-modal.componen
               <input 
                 type="number" 
                 placeholder="Min $" 
-                [ngModel]="store.minPrice()" 
+                [ngModel]="store.rawMinPrice()" 
                 (ngModelChange)="onMinPriceChange($event)" />
               <span>-</span>
               <input 
                 type="number" 
                 placeholder="Max $" 
-                [ngModel]="store.maxPrice()" 
+                [ngModel]="store.rawMaxPrice()" 
                 (ngModelChange)="onMaxPriceChange($event)" />
             </div>
           </div>
@@ -118,6 +119,20 @@ import { PetDetailModalComponent } from '../pet-detail/pet-detail-modal.componen
             </div>
           }
         </div>
+
+        <!-- Active Filter Dismissal Chips -->
+        @if (store.hasActiveFilters()) {
+          <div class="active-filters-bar">
+            <span class="active-filters-label">Active:</span>
+            @for (f of store.activeFilters(); track f.key) {
+              <span class="active-chip">
+                {{ f.label }}
+                <button type="button" class="remove-chip-btn" (click)="store.removeFilter(f.key)">&times;</button>
+              </span>
+            }
+            <button type="button" class="clear-all-link" (click)="store.resetFilters()">Clear All</button>
+          </div>
+        }
       </section>
 
       <!-- Catalog Header / Result Count -->
@@ -247,6 +262,12 @@ import { PetDetailModalComponent } from '../pet-detail/pet-detail-modal.componen
       border: 1px solid var(--border);
       background: #ffffff;
       color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .chip:hover {
+      border-color: var(--primary);
+      color: var(--primary);
     }
     .chip.active {
       background: var(--primary);
@@ -288,6 +309,59 @@ import { PetDetailModalComponent } from '../pet-detail/pet-detail-modal.componen
     }
     .reset-action {
       margin-left: auto;
+    }
+    .active-filters-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: #f8fafc;
+      border-radius: 8px;
+      border: 1px dashed var(--border);
+      font-size: 0.8125rem;
+    }
+    .active-filters-label {
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-right: 0.25rem;
+    }
+    .active-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: #e0e7ff;
+      color: var(--primary);
+      padding: 0.25rem 0.625rem;
+      border-radius: 9999px;
+      font-weight: 500;
+      font-size: 0.8125rem;
+    }
+    .remove-chip-btn {
+      background: transparent;
+      border: none;
+      color: var(--primary);
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0;
+      display: flex;
+      align-items: center;
+    }
+    .remove-chip-btn:hover {
+      color: #312e81;
+    }
+    .clear-all-link {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 0.8125rem;
+      margin-left: 0.5rem;
+    }
+    .clear-all-link:hover {
+      color: var(--danger);
     }
     .catalog-header {
       display: flex;
@@ -348,20 +422,37 @@ import { PetDetailModalComponent } from '../pet-detail/pet-detail-modal.componen
 })
 export class PetCatalogComponent implements OnInit {
   readonly store = inject(CatalogStore);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
   readonly selectedPetId = signal<number | null>(null);
 
+  constructor() {
+    // Synchronize store filter changes to URL query parameters
+    effect(() => {
+      const trigger = this.store.urlSyncTrigger();
+      if (trigger) {
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: this.store.toQueryParams(),
+          replaceUrl: trigger.replaceUrl
+        });
+      }
+    });
+  }
+
   ngOnInit(): void {
-    this.store.loadCategories();
-    this.store.loadPets();
+    const initialParams = this.route.snapshot.queryParams;
+    this.store.initFromQueryParams(initialParams);
   }
 
   onMinPriceChange(val: string): void {
     const num = val !== '' ? parseFloat(val) : null;
-    this.store.setPriceRange(num, this.store.maxPrice());
+    this.store.onMinPriceInput(num);
   }
 
   onMaxPriceChange(val: string): void {
     const num = val !== '' ? parseFloat(val) : null;
-    this.store.setPriceRange(this.store.minPrice(), num);
+    this.store.onMaxPriceInput(num);
   }
 }

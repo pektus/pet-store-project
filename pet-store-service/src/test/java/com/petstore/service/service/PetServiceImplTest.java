@@ -136,4 +136,45 @@ class PetServiceImplTest {
         verify(storageService, times(1)).delete("photo.jpg");
         verify(petRepository, times(1)).delete(samplePet);
     }
+
+    @Test
+    @DisplayName("Should return distinct breeds scoped by category")
+    void testGetBreedsScopedByCategory() {
+        when(petRepository.findDistinctBreedsByCategory("Dog"))
+                .thenReturn(java.util.List.of("Beagle", "German Shepherd", "Golden Retriever"));
+
+        java.util.List<String> breeds = petService.getBreeds("Dog");
+
+        assertThat(breeds).containsExactly("Beagle", "German Shepherd", "Golden Retriever");
+        verify(petRepository, times(1)).findDistinctBreedsByCategory("Dog");
+        verify(petRepository, never()).findDistinctBreeds();
+    }
+
+    @Test
+    @DisplayName("Should return all distinct breeds when category is null or blank")
+    void testGetBreedsUnscoped() {
+        when(petRepository.findDistinctBreeds())
+                .thenReturn(java.util.List.of("Beagle", "Persian", "Siamese"));
+
+        java.util.List<String> breedsNull = petService.getBreeds(null);
+        java.util.List<String> breedsBlank = petService.getBreeds("   ");
+
+        assertThat(breedsNull).containsExactly("Beagle", "Persian", "Siamese");
+        assertThat(breedsBlank).containsExactly("Beagle", "Persian", "Siamese");
+        verify(petRepository, times(2)).findDistinctBreeds();
+    }
+
+    @Test
+    @DisplayName("Should return list of category names ordered by display order")
+    void testGetCategories() {
+        Category cat1 = new Category("Dog", null, 1);
+        Category cat2 = new Category("Cat", null, 2);
+        when(categoryRepository.findAllByOrderByDisplayOrderAsc())
+                .thenReturn(java.util.List.of(cat1, cat2));
+
+        java.util.List<String> categories = petService.getCategories();
+
+        assertThat(categories).containsExactly("Dog", "Cat");
+    }
 }
+

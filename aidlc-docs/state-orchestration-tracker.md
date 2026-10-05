@@ -3,7 +3,7 @@
 > **Global AI-DLC Lifecycle:** `ACTIVE`  
 > **Global Project Inception Status:** `STEP 1 [E] EXECUTE COMPLETED (APPROVED)`  
 > **Current Global Phase:** `STEP 2: SLICE-BY-SLICE EXECUTION (RECURSIVE PAVE LOOP)`  
-> **Active Slice:** `Slice 2: Pet & Supply Search & Exploration`
+> **Active Slice:** `Slice 3: Admin Catalog & Physical Supply Management`
 
 ---
 
@@ -44,8 +44,8 @@
 | Slice ID | Slice Title | Assigned Focus | PAVE Stage | Slice Status | Dependencies |
 | :---: | :--- | :--- | :---: | :---: | :--- |
 | **Slice 1** | **Customer Identity & Registration** | Auth, Email Verification, JWT, Angular 24 Signal Forms Reg | `[E] EXECUTE` | `COMPLETED` | Base `app_users` table |
-| **Slice 2** | **Pet & Supply Search & Exploration** | Multi-Criteria Search API, Scoped Taxonomy, Signal Forms Search | `[P] PLAN` | `ACTIVE IN-FLIGHT` | `pets`, `supplies`, `categories` |
-| **Slice 3** | **Admin Physical Supply Management** | Supplies CRUD, Stock Replenishment, Low-Stock Alerts, Signal Form | `[P] PLAN` | `QUEUED` | Flyway V5 (`supplies`) |
+| **Slice 2** | **Pet & Supply Search & Exploration** | Multi-Criteria Search API, Scoped Taxonomy, Signal Forms Search | `[E] EXECUTE` | `COMPLETED` | `pets`, `supplies`, `categories` |
+| **Slice 3** | **Admin Physical Supply Management** | Supplies CRUD, Stock Replenishment, Low-Stock Alerts, Signal Form | `[P] PLAN` | `ACTIVE IN-FLIGHT` | Flyway V6 (`supplies`) |
 | **Slice 4** | **Shopping Cart Management** | Cart DB Schema (`PET` vs `SUPPLY`), Cart API, Guest Sync, Signal Cart | `[P] PLAN` | `QUEUED` | Slice 1 (`app_users`), `pets`, `supplies` |
 | **Slice 5** | **Checkout & Inventory Reservation** | Order DB Schema, Concurrency Lock, Atomic Checkout, Signal Forms Checkout | `[P] PLAN` | `QUEUED` | Slice 1, Slice 3, Slice 4 |
 | **Slice 6** | **Order History & Admin Fulfillment** | Customer History API, Admin Order Dashboard, Signal Forms Filter | `[P] PLAN` | `QUEUED` | Slice 5 |
@@ -72,29 +72,32 @@
   - [x] **S1-E8:** Slice Verification: 14 backend unit tests passing, production Angular build passing.
 
 ### 🧩 Slice 2: Pet & Supply Search & Exploration
+- **Status:** `COMPLETED`
+- **PAVE Loop State:** `[E]`
+- **Tasks:**
+  - [x] **S2-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-2-search.md`).
+  - [x] **S2-A1:** Target questions & technical decisions in slice markdown file (300ms debounce, replaceUrl).
+  - [x] **S2-V1:** Slice 2 Human Approval Gate.
+  - [x] **S2-E1:** Flyway Indexing Migration: `V5__pet_search_optimization_indexes.sql` on `(category_id, breed, status)`, `(status, price)`, and description trigram.
+  - [x] **S2-E2:** Multi-Criteria Search API & dynamic query tests in `PetServiceImplTest`.
+  - [x] **S2-E3:** Scoped Breed Taxonomy Endpoint (`GET /api/pets/breeds?category={type}`) tested and verified.
+  - [x] **S2-E4:** Angular 24 Signal Forms Search Component with Debounced Signals in `CatalogStore` & `PetCatalogComponent`.
+  - [x] **S2-E5:** Reactive Scoped Breed Filter, Active Filter Chips dismissal (`[Category ✕]`, `[Breed ✕]`, `[Search ✕]`, `[Price ✕]`), and URL Query Param Sync (`replaceUrl: true`).
+  - [x] **S2-E6:** Automated backend and frontend unit tests (26/26 tests passing, Angular build passing).
+
+### 🧩 Slice 3: Admin Catalog & Physical Supply Management
 - **Status:** `ACTIVE IN-FLIGHT`
 - **PAVE Loop State:** `[P] PLAN`
 - **Tasks:**
-  - [ ] **S2-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-2-search.md`).
-  - [ ] **S2-A1:** Target questions & technical decisions in slice markdown file.
-  - [ ] **S2-V1:** Slice 2 Human Approval Gate.
-  - [ ] **S2-E1:** Flyway Indexing Migration on `(category_id, breed)` and search text vectors.
-  - [ ] **S2-E2:** Multi-Criteria Search API (`/api/catalog/search`).
-  - [ ] **S2-E3:** Scoped Breed Taxonomy Endpoint (`GET /api/pets/breeds?category={type}`).
-  - [ ] **S2-E4:** Angular 24 Signal Forms Search Component with Debounced Signals.
-  - [ ] **S2-E5:** Reactive Scoped Breed Filter & URL Query Param Sync.
-  - [ ] **S2-E6:** Automated backend and frontend unit tests.
-
-### 🧩 Slice 3: Admin Catalog & Physical Supply Management
-- **Status:** `QUEUED`
-- **PAVE Loop State:** `NOT STARTED`
-- **Tasks:**
   - [ ] **S3-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-3-supplies.md`).
-  - [ ] **S3-E1:** Flyway Migration: `supplies` table with SKU, category, price, stock, threshold.
+  - [ ] **S3-A1:** Target questions & technical decisions in slice markdown file.
+  - [ ] **S3-V1:** Slice 3 Human Approval Gate.
+  - [ ] **S3-E1:** Flyway Migration: `V6__create_supplies_table.sql` with SKU, category, price, stock, threshold, item_type `MULTIPLE`.
   - [ ] **S3-E2:** Physical Supply Entity & Repository (`Supply`, `SupplyRepository`).
-  - [ ] **S3-E3:** Admin Supply CRUD & Stock Replenishment Service & REST Controller.
+  - [ ] **S3-E3:** Admin Supply CRUD & Stock Replenishment Service & REST Controller (`/api/admin/supplies`).
   - [ ] **S3-E4:** Angular 24 Signal Forms Admin Supply Form Component.
   - [ ] **S3-E5:** Angular 24 Admin Supply Inventory Table with Low-Stock Badges.
+  - [ ] **S3-E6:** Automated backend and frontend unit tests.
 
 ### 🧩 Slice 4: Shopping Cart Management
 - **Status:** `QUEUED`
