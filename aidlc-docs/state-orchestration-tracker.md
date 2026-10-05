@@ -3,7 +3,7 @@
 > **Global AI-DLC Lifecycle:** `ACTIVE`  
 > **Global Project Inception Status:** `STEP 1 [E] EXECUTE COMPLETED (APPROVED)`  
 > **Current Global Phase:** `STEP 2: SLICE-BY-SLICE EXECUTION (RECURSIVE PAVE LOOP)`  
-> **Active Slice:** `Slice 5: Checkout, Inventory Reservation & Payment Emulation`
+> **Active Slice:** `Slice 6: Customer Order History & Admin Order Fulfillment`
 
 ---
 
@@ -47,8 +47,8 @@
 | **Slice 2** | **Pet & Supply Search & Exploration** | Multi-Criteria Search API, Scoped Taxonomy, Signal Forms Search | `[E] EXECUTE` | `COMPLETED` | `pets`, `supplies`, `categories` |
 | **Slice 3** | **Admin Physical Supply Management** | Supplies CRUD, Stock Replenishment, Low-Stock Alerts, Signal Form | `[E] EXECUTE` | `COMPLETED` | Flyway V6 (`supplies`) |
 | **Slice 4** | **Shopping Cart Management** | Cart DB Schema (`PET` vs `SUPPLY`), Cart API, Guest Sync, Signal Cart | `[E] EXECUTE` | `COMPLETED` | Slice 1 (`app_users`), `pets`, `supplies` |
-| **Slice 5** | **Checkout & Inventory Reservation** | Order DB Schema, Concurrency Lock, Atomic Checkout, Signal Forms Checkout | `[P] PLAN & [A] ASK` | `ACTIVE IN-FLIGHT` | Slice 1, Slice 3, Slice 4 |
-| **Slice 6** | **Order History & Admin Fulfillment** | Customer History API, Admin Order Dashboard, Signal Forms Filter | `[P] PLAN` | `QUEUED` | Slice 5 |
+| **Slice 5** | **Checkout & Inventory Reservation** | Order DB Schema, Concurrency Lock, Atomic Checkout, Signal Forms Checkout | `[E] EXECUTE` | `COMPLETED` | Slice 1, Slice 3, Slice 4 |
+| **Slice 6** | **Order History & Admin Fulfillment** | Customer History API, Admin Order Dashboard, Signal Forms Filter | `[P] PLAN & [A] ASK` | `ACTIVE IN-FLIGHT` | Slice 5 |
 | **Slice 7** | **Accounting & Analytics Reporting** | Financial Ledger, Daily/Weekly/Monthly Sales & Inventory Reports, Export | `[P] PLAN` | `QUEUED` | Slice 3, Slice 5, Slice 6 |
 
 ---
@@ -114,29 +114,33 @@
   - [x] **S4-E6:** Automated backend and frontend unit tests (31/31 backend tests passing, full Angular build passing).
 
 ### 🧩 Slice 5: Checkout, Inventory Reservation & Payment Emulation
+- **Status:** `COMPLETED`
+- **PAVE Loop State:** `[E]`
+- **Tasks:**
+  - [x] **S5-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-5-checkout.md`).
+  - [x] **S5-A1:** Target questions & technical decisions in slice markdown file (Luhn algorithm check, expiry check, CVV check, decline simulation, stock reservation policy).
+  - [x] **S5-V1:** Slice 5 Human Approval Gate.
+  - [x] **S5-E1:** Flyway Migration: `V8__create_orders_and_order_items_tables.sql`.
+  - [x] **S5-E2:** Order & OrderItem Entities, Enums (`OrderStatus`, `PaymentStatus`), and Repositories.
+  - [x] **S5-E3:** Payment Emulation Service (`PaymentService`, `PaymentServiceImpl`) with Luhn validator and decline card simulation.
+  - [x] **S5-E4:** Atomic Checkout Service (`CheckoutService`, `CheckoutServiceImpl`) with pessimistic/optimistic inventory reservation and cart clearance.
+  - [x] **S5-E5:** Checkout REST Endpoints (`POST /api/checkout`).
+  - [x] **S5-E6:** Angular 24 Signal Forms Checkout & Payment Component with Masked Card Preview and Confirmation Receipt.
+  - [x] **S5-E7:** Automated unit and integration verification (42 backend unit tests passing, frontend production build passing).
+
+### 🧩 Slice 6: Customer Order History & Admin Order Fulfillment
 - **Status:** `ACTIVE IN-FLIGHT`
 - **PAVE Loop State:** `[P] PLAN & [A] ASK`
 - **Tasks:**
-  - [ ] **S5-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-5-checkout.md`).
-  - [ ] **S5-A1:** Target questions & technical decisions in slice markdown file (Luhn algorithm check, expiry check, CVV check, decline simulation, stock reservation policy).
-  - [ ] **S5-V1:** Slice 5 Human Approval Gate.
-  - [ ] **S5-E1:** Flyway Migration: `V8__create_orders_and_order_items_tables.sql`.
-  - [ ] **S5-E2:** Order & OrderItem Entities, Enums (`OrderStatus`, `PaymentStatus`), and Repositories.
-  - [ ] **S5-E3:** Payment Emulation Service (`PaymentService`, `PaymentServiceImpl`) with Luhn validator and decline card simulation.
-  - [ ] **S5-E4:** Atomic Checkout Service (`CheckoutService`, `CheckoutServiceImpl`) with pessimistic/optimistic inventory reservation and cart clearance.
-  - [ ] **S5-E5:** Checkout REST Endpoints (`POST /api/checkout`).
-  - [ ] **S5-E6:** Angular 24 Signal Forms Checkout & Payment Component with Masked Card Preview and Confirmation Receipt.
-  - [ ] **S5-E7:** Automated unit and integration verification.
-
-### 🧩 Slice 6: Customer Order History & Admin Order Fulfillment
-- **Status:** `QUEUED`
-- **PAVE Loop State:** `NOT STARTED`
-- **Tasks:**
   - [ ] **S6-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-6-orders.md`).
-  - [ ] **S6-E1:** Order History API for Customer & Admin.
-  - [ ] **S6-E2:** Order Status Transition API for Admin (`CONFIRMED`, `CANCELLED`, `COMPLETED`).
-  - [ ] **S6-E3:** Angular 24 Customer "My Orders" View.
-  - [ ] **S6-E4:** Angular 24 Admin Order Management Dashboard with Signal Forms Filter.
+  - [ ] **S6-A1:** Clarifications & Technical Design Choices in Slice Markdown.
+  - [ ] **S6-V1:** Slice 6 Human Approval Gate.
+  - [ ] **S6-E1:** Order History API for Customer (`GET /api/customer/orders`, `GET /api/customer/orders/{orderNumber}`).
+  - [ ] **S6-E2:** Admin Order Management API (`GET /api/admin/orders`, `PATCH /api/admin/orders/{orderNumber}/status`).
+  - [ ] **S6-E3:** Order Status Transition Validation & Inventory Rollback on Cancellation (`CONFIRMED` -> `PROCESSING` -> `SHIPPED` -> `DELIVERED`, or `CANCELLED`).
+  - [ ] **S6-E4:** Angular 24 Customer "My Orders" History View with Item Details & Status Timeline.
+  - [ ] **S6-E5:** Angular 24 Admin Order Management Dashboard with Signal Forms Filter (Status, Customer, Date Range) & Status Transition Controls.
+  - [ ] **S6-E6:** Automated backend and frontend unit tests & verification.
 
 ### 🧩 Slice 7: Accounting, Financial Reporting & Sales/Inventory Analytics
 - **Status:** `QUEUED`

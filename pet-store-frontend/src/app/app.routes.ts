@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { PetCatalogComponent } from './features/catalog/pet-catalog.component';
 import { SupplyCatalogComponent } from './features/catalog/supply-catalog.component';
+import { CheckoutComponent } from './features/checkout/checkout.component';
 import { AdminInventoryComponent } from './features/admin/inventory/admin-inventory.component';
 import { CustomerRegistrationComponent } from './features/auth/customer-registration/customer-registration.component';
 import { EmailVerificationComponent } from './features/auth/email-verification/email-verification.component';
@@ -16,6 +17,11 @@ export const routes: Routes = [
     path: 'supplies',
     component: SupplyCatalogComponent,
     title: 'PetStore - Pet Care & Supplies'
+  },
+  {
+    path: 'checkout',
+    component: CheckoutComponent,
+    title: 'PetStore - Secure Checkout'
   },
   {
     path: 'register',

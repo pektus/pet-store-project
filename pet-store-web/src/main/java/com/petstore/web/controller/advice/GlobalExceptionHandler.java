@@ -4,6 +4,7 @@ import com.petstore.service.exception.DuplicateResourceException;
 import com.petstore.service.exception.InvalidFileException;
 import com.petstore.service.exception.InvalidStateTransitionException;
 import com.petstore.service.exception.InvalidTokenException;
+import com.petstore.service.exception.PaymentProcessingException;
 import com.petstore.service.exception.ResourceNotFoundException;
 import com.petstore.service.exception.StorageException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -78,6 +79,15 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleBadRequestExceptions(RuntimeException ex, HttpServletRequest request) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
         problem.setTitle("Bad Request");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    @ExceptionHandler(PaymentProcessingException.class)
+    public ProblemDetail handlePaymentProcessingException(PaymentProcessingException ex, HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("Payment Authorization Failed");
         problem.setInstance(URI.create(request.getRequestURI()));
         problem.setProperty("timestamp", Instant.now());
         return problem;
