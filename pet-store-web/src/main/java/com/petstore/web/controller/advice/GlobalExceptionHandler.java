@@ -1,7 +1,9 @@
 package com.petstore.web.controller.advice;
 
+import com.petstore.service.exception.DuplicateResourceException;
 import com.petstore.service.exception.InvalidFileException;
 import com.petstore.service.exception.InvalidStateTransitionException;
+import com.petstore.service.exception.InvalidTokenException;
 import com.petstore.service.exception.ResourceNotFoundException;
 import com.petstore.service.exception.StorageException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,6 +33,24 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problem.setTitle("Resource Not Found");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ProblemDetail handleDuplicateResource(DuplicateResourceException ex, HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Duplicate Resource Conflict");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ProblemDetail handleInvalidToken(InvalidTokenException ex, HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("Invalid Verification Token");
         problem.setInstance(URI.create(request.getRequestURI()));
         problem.setProperty("timestamp", Instant.now());
         return problem;

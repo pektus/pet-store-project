@@ -29,14 +29,22 @@ import { AuthStore } from '../../../core/stores/auth.store';
         <div class="nav-actions">
           @if (authStore.isAuthenticated()) {
             <span class="user-greeting">
-              Hello, <strong>{{ authStore.currentUser()?.username }}</strong>
+              Hello, <strong>{{ authStore.currentUser()?.fullName || authStore.currentUser()?.username }}</strong>
+              @if (authStore.isAdmin()) {
+                <span class="role-badge badge-admin">Admin</span>
+              } @else if (authStore.isCustomer()) {
+                <span class="role-badge badge-customer">Customer</span>
+              }
             </span>
             <button class="btn btn-secondary btn-sm" (click)="authStore.logout()">
               Sign Out
             </button>
           } @else {
+            <a routerLink="/register" class="btn btn-outline btn-sm">
+              Register
+            </a>
             <button class="btn btn-primary btn-sm" (click)="openLogin.emit()">
-              Admin Sign In
+              Sign In
             </button>
           }
         </div>
@@ -87,11 +95,45 @@ import { AuthStore } from '../../../core/stores/auth.store';
     .nav-actions {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
     }
     .user-greeting {
       font-size: 0.875rem;
       color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .role-badge {
+      font-size: 0.7rem;
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-admin {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+    .badge-customer {
+      background-color: #e0e7ff;
+      color: #4338ca;
+    }
+    .btn-outline {
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-main);
+      padding: 0.375rem 0.75rem;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: inline-block;
+      transition: all 0.15s ease;
+    }
+    .btn-outline:hover {
+      background: #f1f5f9;
+      border-color: var(--text-muted);
     }
   `]
 })

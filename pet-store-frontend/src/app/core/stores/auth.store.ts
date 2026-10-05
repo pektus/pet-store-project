@@ -1,7 +1,15 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-import { AuthResponse, LoginRequest, UserProfile } from '../models/user.model';
+import {
+  AuthResponse,
+  CustomerProfileUpdateRequest,
+  CustomerRegistrationRequest,
+  LoginRequest,
+  RegistrationResponse,
+  UserProfile,
+  VerifyEmailResponse
+} from '../models/user.model';
 
 const TOKEN_KEY = 'petstore_jwt_token';
 const USER_KEY = 'petstore_user_profile';
@@ -17,11 +25,41 @@ export class AuthStore {
 
   readonly isAuthenticated = computed(() => !!this.token() && !!this.currentUser());
   readonly isAdmin = computed(() => this.currentUser()?.role === 'ROLE_ADMIN');
+  readonly isStaff = computed(() => this.currentUser()?.role === 'ROLE_STAFF');
+  readonly isCustomer = computed(() => this.currentUser()?.role === 'ROLE_CUSTOMER');
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>('/api/auth/login', credentials).pipe(
       tap(response => {
         this.setSession(response.accessToken, response.user);
+      })
+    );
+  }
+
+  register(payload: CustomerRegistrationRequest): Observable<RegistrationResponse> {
+    return this.http.post<RegistrationResponse>('/api/auth/register', payload);
+  }
+
+  verifyEmail(token: string): Observable<VerifyEmailResponse> {
+    return this.http.get<VerifyEmailResponse>(`/api/auth/verify?token=${encodeURIComponent(token)}`).pipe(
+      tap(response => {
+        this.setSession(response.token, response.user);
+      })
+    );
+  }
+
+  resendVerification(identifier: string): Observable<RegistrationResponse> {
+    return this.http.post<RegistrationResponse>(
+      `/api/auth/resend-verification?identifier=${encodeURIComponent(identifier)}`,
+      {}
+    );
+  }
+
+  updateCustomerProfile(update: CustomerProfileUpdateRequest): Observable<UserProfile> {
+    return this.http.put<UserProfile>('/api/customer/profile', update).pipe(
+      tap(updatedProfile => {
+        localStorage.setItem(USER_KEY, JSON.stringify(updatedProfile));
+        this.currentUser.set(updatedProfile);
       })
     );
   }

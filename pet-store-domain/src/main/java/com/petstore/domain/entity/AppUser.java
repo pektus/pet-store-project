@@ -30,6 +30,21 @@ public class AppUser implements Serializable {
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Column(name = "full_name", length = 100)
+    private String fullName;
+
+    @Column(length = 30)
+    private String phone;
+
+    @Column(name = "is_email_verified", nullable = false)
+    private boolean isEmailVerified = false;
+
+    @Column(name = "verification_token", length = 255)
+    private String verificationToken;
+
+    @Column(name = "verification_token_expiry")
+    private Instant verificationTokenExpiry;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -125,6 +140,46 @@ public class AppUser implements Serializable {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public boolean isEmailVerified() {
+        return isEmailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        isEmailVerified = emailVerified;
+    }
+
+    public String getVerificationToken() {
+        return verificationToken;
+    }
+
+    public void setVerificationToken(String verificationToken) {
+        this.verificationToken = verificationToken;
+    }
+
+    public Instant getVerificationTokenExpiry() {
+        return verificationTokenExpiry;
+    }
+
+    public void setVerificationTokenExpiry(Instant verificationTokenExpiry) {
+        this.verificationTokenExpiry = verificationTokenExpiry;
     }
 
     @Override

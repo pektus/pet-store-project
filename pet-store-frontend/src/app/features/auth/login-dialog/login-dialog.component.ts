@@ -1,19 +1,19 @@
 import { Component, input, output, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthStore } from '../../../core/stores/auth.store';
 
 @Component({
   selector: 'app-login-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     @if (isOpen()) {
       <div class="modal-overlay" (click)="close.emit()">
         <div class="modal-content login-box" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <h3>Admin Sign In</h3>
+            <h3>Sign In</h3>
             <button class="close-btn" (click)="close.emit()">&times;</button>
           </div>
 
@@ -35,7 +35,7 @@ import { AuthStore } from '../../../core/stores/auth.store';
                   (ngModelChange)="username.set($event)" 
                   name="username" 
                   class="form-control" 
-                  placeholder="e.g. admin" />
+                  placeholder="e.g. admin or username" />
               </div>
 
               <div class="form-group">
@@ -53,13 +53,19 @@ import { AuthStore } from '../../../core/stores/auth.store';
             </div>
 
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" (click)="close.emit()">Cancel</button>
-              <button 
-                type="submit" 
-                class="btn btn-primary" 
-                [disabled]="isSubmitting() || !username() || !password()">
-                {{ isSubmitting() ? 'Signing in...' : 'Sign In' }}
-              </button>
+              <div class="signup-prompt">
+                <span>Need an account?</span>
+                <a routerLink="/register" (click)="close.emit()" class="register-link">Register</a>
+              </div>
+              <div class="footer-actions">
+                <button type="button" class="btn btn-secondary" (click)="close.emit()">Cancel</button>
+                <button 
+                  type="submit" 
+                  class="btn btn-primary" 
+                  [disabled]="isSubmitting() || !username() || !password()">
+                  {{ isSubmitting() ? 'Signing in...' : 'Sign In' }}
+                </button>
+              </div>
             </div>
           </form>
         </div>
@@ -100,6 +106,31 @@ import { AuthStore } from '../../../core/stores/auth.store';
       font-size: 0.875rem;
       margin-bottom: 1.25rem;
     }
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .signup-prompt {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 0.35rem;
+    }
+    .register-link {
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .register-link:hover {
+      text-decoration: underline;
+    }
+    .footer-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
     .close-btn {
       font-size: 1.5rem;
       color: var(--text-muted);
@@ -131,13 +162,20 @@ export class LoginDialogComponent {
       next: () => {
         this.isSubmitting.set(false);
         this.close.emit();
-        this.router.navigate(['/admin/inventory']);
+        if (this.authStore.isAdmin()) {
+          this.router.navigate(['/admin/inventory']);
+        }
       },
       error: err => {
         this.isSubmitting.set(false);
-        this.errorMessage.set(
-          err.error?.detail || 'Invalid username or password credentials.'
-        );
+        const detail = err.error?.detail || err.error?.message;
+        if (detail && detail.toLowerCase().includes('disabled')) {
+          this.errorMessage.set('Your account is not activated. Please verify your email via the activation link.');
+        } else {
+          this.errorMessage.set(
+            detail || 'Invalid username or password credentials.'
+          );
+        }
       }
     });
   }

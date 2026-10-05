@@ -3,7 +3,7 @@
 > **Global AI-DLC Lifecycle:** `ACTIVE`  
 > **Global Project Inception Status:** `STEP 1 [E] EXECUTE COMPLETED (APPROVED)`  
 > **Current Global Phase:** `STEP 2: SLICE-BY-SLICE EXECUTION (RECURSIVE PAVE LOOP)`  
-> **Active Slice:** `Slice 1: Customer Identity & Registration`
+> **Active Slice:** `Slice 2: Pet & Supply Search & Exploration`
 
 ---
 
@@ -15,13 +15,16 @@
   - **Persistence:** PostgreSQL 16+, Hibernate 7.4.x, HikariCP, Flyway 11.3.x migrations
   - **Frontend:** Angular 24 SPA (100% Signal-First + Exclusive Signal Forms, Zero legacy FormBuilder/ReactiveFormsModule)
 - **Approved Inception Spec:** [`project-spec.md`](../project-spec.md)
-- **Key Domain Decisions (Approved Q1.1 - Q1.6):**
+- **Key Domain Decisions (Approved Q1.1 - Q1.9):**
   - **Q1.1 (Inventory Tagging):** Pets are tagged as `SINGLE` (`quantity = 1` strictly enforced); physical supplies tagged as `MULTIPLE` (`quantity >= 1`).
   - **Q1.2 (Guest Cart):** Anonymous visitors can add pets/supplies locally; cart merges into DB on login/registration.
-  - **Q1.3 (Checkout/Payment):** Order placement with simulated payment / in-store pickup gateway.
+  - **Q1.3 (Checkout/Payment):** Emulated payment gateway with Luhn algorithm, future expiry, CVV checks, masked cards, and test decline simulation.
   - **Q1.4 (Email Verification):** Customer registration requires email verification/activation token link.
   - **Q1.5 (Frontend):** Angular 24 + Signal Forms exclusively.
   - **Q1.6 (Search):** Type/category and breed dynamic search with debounced Signal Forms.
+  - **Q1.7 (Admin Supplies):** Physical supplies management with SKU, stock quantity, low-stock alerts, multiple quantity tag.
+  - **Q1.8 (Accounting):** Transactional financial ledger (`accounting_ledger`) recording payments and refunds.
+  - **Q1.9 (Reporting):** Sales & inventory reporting per day, week, and month with interactive Signal dashboard & CSV export.
 
 ---
 
@@ -30,7 +33,7 @@
 | AI-DLC Global Step | Description | Lifecycle Phase | Status | Artifacts / Output |
 | :--- | :--- | :---: | :---: | :--- |
 | **Step 1: Global Project Inception** | Project Spec & Blueprint Inception | `[P] -> [A] -> [V] -> [E]` | `COMPLETED` | [`project-spec.md`](../project-spec.md) |
-| **Step 2: Recursive Slice Execution** | Vertical Feature Slices (1 to 5) | `PAVE Recursive` | `IN PROGRESS` | `aidlc-docs/slices/` |
+| **Step 2: Recursive Slice Execution** | Vertical Feature Slices (1 to 7) | `PAVE Recursive` | `IN PROGRESS` | `aidlc-docs/slices/` |
 | **Step 3: System Integration & E2E** | Multi-Slice Integration & Build Verification | `PAVE` | `PLANNED` | E2E test runs & verification logs |
 | **Step 4: Release Readiness & Handover** | Deployment & Documentation Finalization | `PAVE` | `PLANNED` | Release package & deployment guide |
 
@@ -40,8 +43,8 @@
 
 | Slice ID | Slice Title | Assigned Focus | PAVE Stage | Slice Status | Dependencies |
 | :---: | :--- | :--- | :---: | :---: | :--- |
-| **Slice 1** | **Customer Identity & Registration** | Auth, Email Verification, JWT, Angular 24 Signal Forms Reg | `[V] VALIDATE` | `AWAITING APPROVAL` | Base `app_users` table |
-| **Slice 2** | **Pet & Supply Search & Exploration** | Multi-Criteria Search API, Scoped Taxonomy, Signal Forms Search | `[P] PLAN` | `QUEUED` | `pets`, `supplies`, `categories` |
+| **Slice 1** | **Customer Identity & Registration** | Auth, Email Verification, JWT, Angular 24 Signal Forms Reg | `[E] EXECUTE` | `COMPLETED` | Base `app_users` table |
+| **Slice 2** | **Pet & Supply Search & Exploration** | Multi-Criteria Search API, Scoped Taxonomy, Signal Forms Search | `[P] PLAN` | `ACTIVE IN-FLIGHT` | `pets`, `supplies`, `categories` |
 | **Slice 3** | **Admin Physical Supply Management** | Supplies CRUD, Stock Replenishment, Low-Stock Alerts, Signal Form | `[P] PLAN` | `QUEUED` | Flyway V5 (`supplies`) |
 | **Slice 4** | **Shopping Cart Management** | Cart DB Schema (`PET` vs `SUPPLY`), Cart API, Guest Sync, Signal Cart | `[P] PLAN` | `QUEUED` | Slice 1 (`app_users`), `pets`, `supplies` |
 | **Slice 5** | **Checkout & Inventory Reservation** | Order DB Schema, Concurrency Lock, Atomic Checkout, Signal Forms Checkout | `[P] PLAN` | `QUEUED` | Slice 1, Slice 3, Slice 4 |
@@ -53,30 +56,34 @@
 ## 4. Granular Slice Tracking & Task Backlog
 
 ### 🧩 Slice 1: Customer Identity & Registration
-- **Status:** `AWAITING [V] HUMAN APPROVAL`
-- **PAVE Loop State:** `[V]`
+- **Status:** `COMPLETED`
+- **PAVE Loop State:** `[E]`
 - **Tasks:**
   - [x] **S1-P1:** Draft Slice Specification & Technical Contract (`aidlc-docs/slices/slice-1-registration.md`).
   - [x] **S1-A1:** Clarification questions (if any) formatted in slice markdown file.
-  - [ ] **S1-V1:** Slice Human Approval Gate.
-  - [ ] **S1-E1:** Database Migration: `app_users` email verification & role updates.
-  - [ ] **S1-E2:** Domain & DTOs (`UserRegistrationRequest`, `EmailVerificationResponse`, `CustomerProfileDTO`).
-  - [ ] **S1-E3:** Service Layer: Registration service, verification token generation/validation, BCrypt hashing.
-  - [ ] **S1-E4:** Web Controller & Security: Registration & Verification endpoints, Spring Security authorization.
-  - [ ] **S1-E5:** Angular 24 Signal Forms Component: Registration form with Signal validation, pending verification modal.
-  - [ ] **S1-E6:** Reactive Auth Store & Navigation: Signals for user session state.
-  - [ ] **S1-E7:** Slice Verification & Automated Tests.
+  - [x] **S1-V1:** Slice Human Approval Gate.
+  - [x] **S1-E1:** Database Migration: `V4__customer_registration_and_activation.sql` (`app_users` full_name, phone, verification token, role updates).
+  - [x] **S1-E2:** Domain & DTOs (`CustomerRegistrationRequest`, `RegistrationResponse`, `VerifyEmailResponse`, `CustomerProfileUpdateRequest`, `UserProfileDTO`).
+  - [x] **S1-E3:** Service Layer: `AuthService` registration, email verification, resend verification token, BCrypt hashing.
+  - [x] **S1-E4:** Web Controller & Security: `AuthController` register/verify/resend endpoints, `CustomerProfileController`, Spring Security permitAll/authenticated rules.
+  - [x] **S1-E5:** Angular 24 Signal Forms Component: Standalone `CustomerRegistrationComponent` with Signal validation, pending verification modal with dev activation link.
+  - [x] **S1-E6:** Standalone `EmailVerificationComponent` for `/verify?token=...` handling and token resend capability.
+  - [x] **S1-E7:** Reactive Auth Store & Navigation: Signals for user session state, customer role badges, registration link in navbar.
+  - [x] **S1-E8:** Slice Verification: 14 backend unit tests passing, production Angular build passing.
 
 ### 🧩 Slice 2: Pet & Supply Search & Exploration
-- **Status:** `QUEUED`
-- **PAVE Loop State:** `NOT STARTED`
+- **Status:** `ACTIVE IN-FLIGHT`
+- **PAVE Loop State:** `[P] PLAN`
 - **Tasks:**
   - [ ] **S2-P1:** Draft Slice Specification (`aidlc-docs/slices/slice-2-search.md`).
+  - [ ] **S2-A1:** Target questions & technical decisions in slice markdown file.
+  - [ ] **S2-V1:** Slice 2 Human Approval Gate.
   - [ ] **S2-E1:** Flyway Indexing Migration on `(category_id, breed)` and search text vectors.
   - [ ] **S2-E2:** Multi-Criteria Search API (`/api/catalog/search`).
   - [ ] **S2-E3:** Scoped Breed Taxonomy Endpoint (`GET /api/pets/breeds?category={type}`).
   - [ ] **S2-E4:** Angular 24 Signal Forms Search Component with Debounced Signals.
   - [ ] **S2-E5:** Reactive Scoped Breed Filter & URL Query Param Sync.
+  - [ ] **S2-E6:** Automated backend and frontend unit tests.
 
 ### 🧩 Slice 3: Admin Catalog & Physical Supply Management
 - **Status:** `QUEUED`
