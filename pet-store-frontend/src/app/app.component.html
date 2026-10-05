@@ -1,5 +1,5 @@
 <div class="app-layout">
-  <app-navbar (openLogin)="isLoginOpen.set(true)" />
+  <app-navbar (openLogin)="authStore.openLogin()" />
 
   <main class="main-content">
     <router-outlet />
@@ -13,8 +13,8 @@
 
   <!-- Global Login Dialog -->
   <app-login-dialog 
-    [isOpen]="isLoginOpen()" 
-    (close)="isLoginOpen.set(false)" />
+    [isOpen]="authStore.isLoginOpen()" 
+    (close)="authStore.closeLogin()" />
 
   <!-- Global Shopping Cart Drawer -->
   <app-cart-drawer />

@@ -30,7 +30,7 @@
         } @else {
           <div class="items-list">
             @for (item of cartStore.items(); track item.id) {
-              <div class="cart-item-card" [class.item-unavailable]="!item.isAvailable">
+              <div class="cart-item-card" [class.item-unavailable]="isItemUnavailable(item)">
                 <div class="item-thumbnail">
                   @if (item.photoUrl) {
                     <img [src]="item.photoUrl" [alt]="item.title" />
@@ -54,7 +54,7 @@
                     <p class="item-subtitle">{{ item.subtitle }}</p>
                   }
 
-                  @if (!item.isAvailable) {
+                  @if (isItemUnavailable(item)) {
                     <div class="item-status-warning">
                       <span class="warning-icon">&#9888;</span>
                       <span>{{ item.availabilityMessage || 'Item is currently unavailable' }}</span>
@@ -125,7 +125,7 @@
               Clear Cart
             </button>
             <button class="btn btn-primary btn-checkout" 
-                    [disabled]="!cartStore.canCheckout() || cartStore.loading()"
+                    [disabled]="!cartStore.canCheckout() || cartStore.loading() || cartStore.hasUnavailableItems()"
                     (click)="proceedToCheckout()">
               Proceed to Checkout
             </button>

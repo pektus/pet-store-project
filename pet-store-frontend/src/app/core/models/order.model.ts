@@ -91,6 +91,7 @@ export interface CheckoutQuote {
   subtotal: number;
   shippingAmount: number;
   isFreeShipping: boolean;
+  freeShipping?: boolean;
   taxAmount: number;
   totalAmount: number;
   totalItems: number;

@@ -22,6 +22,16 @@ export class AuthStore {
   readonly isStaff = computed(() => this.currentUser()?.role === 'ROLE_STAFF');
   readonly isCustomer = computed(() => this.currentUser()?.role === 'ROLE_CUSTOMER');
 
+  readonly isLoginOpen = signal<boolean>(false);
+
+  openLogin(): void {
+    this.isLoginOpen.set(true);
+  }
+
+  closeLogin(): void {
+    this.isLoginOpen.set(false);
+  }
+
   login(credentials: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>('/api/auth/login', credentials).pipe(
       tap(response => {
@@ -80,6 +90,7 @@ export class AuthStore {
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     this.token.set(token);
     this.currentUser.set(user);
+    this.closeLogin();
     this.cartStore.syncGuestCartOnLogin();
   }
 

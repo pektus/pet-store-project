@@ -11,6 +11,7 @@ export interface CartItem {
   subtotal: number;
   photoUrl?: string | null;
   isAvailable: boolean;
+  available?: boolean;
   stockAvailable?: number;
   availabilityMessage?: string | null;
 }

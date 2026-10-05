@@ -386,8 +386,13 @@ export class CartDrawerComponent {
     }
   }
 
+  isItemUnavailable(item: CartItem): boolean {
+    const avail = item.isAvailable ?? (item as any).available;
+    return avail === false;
+  }
+
   proceedToCheckout(): void {
-    if (!this.cartStore.canCheckout()) return;
+    if (!this.cartStore.canCheckout() || this.cartStore.hasUnavailableItems()) return;
     this.cartStore.closeDrawer();
     this.router.navigate(['/checkout']);
   }

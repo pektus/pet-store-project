@@ -1,5 +1,6 @@
 package com.petstore.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.petstore.domain.enums.CartItemType;
 
 import java.math.BigDecimal;
@@ -111,12 +112,19 @@ public class CartItemResponseDTO {
         this.photoUrl = photoUrl;
     }
 
+    @JsonProperty("isAvailable")
     public boolean isAvailable() {
         return isAvailable;
     }
 
+    @JsonProperty("isAvailable")
     public void setAvailable(boolean available) {
-        isAvailable = available;
+        this.isAvailable = available;
+    }
+
+    @JsonProperty("available")
+    public boolean getAvailable() {
+        return isAvailable;
     }
 
     public Integer getStockAvailable() {

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
 import { AddToCartRequest, Cart, CartSyncRequest, UpdateCartItemRequest } from '../models/cart.model';
 
 const SESSION_TOKEN_KEY = 'petstore_cart_session_token';
@@ -32,8 +32,29 @@ export class CartService {
     return headers;
   }
 
+  private normalizeCart(cart: Cart): Cart {
+    if (!cart) return cart;
+    const items = (cart.items || []).map(item => {
+      const isAvailable = item.isAvailable !== undefined && item.isAvailable !== null
+        ? Boolean(item.isAvailable)
+        : ((item as any).available !== undefined && (item as any).available !== null
+            ? Boolean((item as any).available)
+            : true);
+      return {
+        ...item,
+        isAvailable,
+        available: isAvailable
+      };
+    });
+    return {
+      ...cart,
+      items
+    };
+  }
+
   getCart(): Observable<Cart> {
     return this.http.get<Cart>('/api/cart', { headers: this.createHeaders() }).pipe(
+      map(cart => this.normalizeCart(cart)),
       tap(cart => {
         if (cart.sessionToken) {
           this.setSessionToken(cart.sessionToken);
@@ -44,6 +65,7 @@ export class CartService {
 
   addItem(request: AddToCartRequest): Observable<Cart> {
     return this.http.post<Cart>('/api/cart/items', request, { headers: this.createHeaders() }).pipe(
+      map(cart => this.normalizeCart(cart)),
       tap(cart => {
         if (cart.sessionToken) {
           this.setSessionToken(cart.sessionToken);
@@ -54,18 +76,26 @@ export class CartService {
 
   updateItemQuantity(itemId: number, quantity: number): Observable<Cart> {
     const payload: UpdateCartItemRequest = { quantity };
-    return this.http.put<Cart>(`/api/cart/items/${itemId}`, payload, { headers: this.createHeaders() });
+    return this.http.put<Cart>(`/api/cart/items/${itemId}`, payload, { headers: this.createHeaders() }).pipe(
+      map(cart => this.normalizeCart(cart))
+    );
   }
 
   removeItem(itemId: number): Observable<Cart> {
-    return this.http.delete<Cart>(`/api/cart/items/${itemId}`, { headers: this.createHeaders() });
+    return this.http.delete<Cart>(`/api/cart/items/${itemId}`, { headers: this.createHeaders() }).pipe(
+      map(cart => this.normalizeCart(cart))
+    );
   }
 
   clearCart(): Observable<Cart> {
-    return this.http.delete<Cart>('/api/cart', { headers: this.createHeaders() });
+    return this.http.delete<Cart>('/api/cart', { headers: this.createHeaders() }).pipe(
+      map(cart => this.normalizeCart(cart))
+    );
   }
 
   syncGuestCart(request: CartSyncRequest): Observable<Cart> {
-    return this.http.post<Cart>('/api/cart/sync', request, { headers: this.createHeaders() });
+    return this.http.post<Cart>('/api/cart/sync', request, { headers: this.createHeaders() }).pipe(
+      map(cart => this.normalizeCart(cart))
+    );
   }
 }

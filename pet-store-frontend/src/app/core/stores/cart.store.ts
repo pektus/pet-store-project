@@ -19,7 +19,10 @@ export class CartStore {
   readonly totalPrice = computed<number>(() => this.cart()?.totalPrice ?? 0);
   readonly canCheckout = computed<boolean>(() => this.cart()?.canCheckout ?? false);
   readonly hasUnavailableItems = computed<boolean>(() =>
-    (this.cart()?.items ?? []).some(item => !item.isAvailable)
+    (this.cart()?.items ?? []).some(item => {
+      const avail = item.isAvailable ?? (item as any).available;
+      return avail === false;
+    })
   );
 
   constructor() {

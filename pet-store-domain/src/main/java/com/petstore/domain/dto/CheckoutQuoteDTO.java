@@ -1,5 +1,6 @@
 package com.petstore.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 
 public class CheckoutQuoteDTO {
@@ -42,12 +43,19 @@ public class CheckoutQuoteDTO {
         this.shippingAmount = shippingAmount;
     }
 
+    @JsonProperty("isFreeShipping")
     public boolean isFreeShipping() {
         return isFreeShipping;
     }
 
+    @JsonProperty("isFreeShipping")
     public void setFreeShipping(boolean freeShipping) {
-        isFreeShipping = freeShipping;
+        this.isFreeShipping = freeShipping;
+    }
+
+    @JsonProperty("freeShipping")
+    public boolean getFreeShipping() {
+        return isFreeShipping;
     }
 
     public BigDecimal getTaxAmount() {

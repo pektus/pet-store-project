@@ -1,9 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { LoginDialogComponent } from './features/auth/login-dialog/login-dialog.component';
 import { CartDrawerComponent } from './features/cart/cart-drawer.component';
+import { AuthStore } from './core/stores/auth.store';
 
 @Component({
   selector: 'app-root',
@@ -33,5 +34,5 @@ import { CartDrawerComponent } from './features/cart/cart-drawer.component';
   `]
 })
 export class AppComponent {
-  readonly isLoginOpen = signal<boolean>(false);
+  readonly authStore = inject(AuthStore);
 }
