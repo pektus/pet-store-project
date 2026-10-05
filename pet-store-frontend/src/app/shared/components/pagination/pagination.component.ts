@@ -5,27 +5,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-pagination',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    @if (totalPages() > 1) {
-      <div class="pagination-container">
-        <button 
-          class="btn btn-secondary btn-sm" 
-          [disabled]="!hasPrevious()" 
-          (click)="onPrevious()">
-          &larr; Previous
-        </button>
-        <span class="page-indicator">
-          Page <strong>{{ displayPage() }}</strong> of <strong>{{ totalPages() }}</strong>
-        </span>
-        <button 
-          class="btn btn-secondary btn-sm" 
-          [disabled]="!hasNext()" 
-          (click)="onNext()">
-          Next &rarr;
-        </button>
-      </div>
-    }
-  `,
+  templateUrl: './pagination.component.html',
   styles: [`
     .pagination-container {
       display: flex;

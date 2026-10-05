@@ -4,7 +4,7 @@ import { PetService } from '../services/pet.service';
 import { PetSummary } from '../models/pet.model';
 
 export interface ActiveFilter {
-  key: 'search' | 'category' | 'breed' | 'price';
+  key: 'search' | 'category' | 'breed' | 'price' | 'status';
   label: string;
 }
 
@@ -27,6 +27,7 @@ export class CatalogStore {
   readonly searchTerm = signal<string>('');
   readonly selectedCategory = signal<string>('');
   readonly selectedBreed = signal<string>('');
+  readonly selectedStatus = signal<string>('AVAILABLE');
   readonly minPrice = signal<number | null>(null);
   readonly maxPrice = signal<number | null>(null);
   readonly sortOption = signal<string>('createdAt,desc');
@@ -57,6 +58,7 @@ export class CatalogStore {
       this.searchTerm().trim() ||
       this.selectedCategory() ||
       this.selectedBreed() ||
+      (this.selectedStatus() && this.selectedStatus() !== 'AVAILABLE') ||
       this.minPrice() != null ||
       this.maxPrice() != null
     );
@@ -69,6 +71,9 @@ export class CatalogStore {
     }
     if (this.selectedBreed()) {
       list.push({ key: 'breed', label: `Breed: ${this.selectedBreed()}` });
+    }
+    if (this.selectedStatus() && this.selectedStatus() !== 'AVAILABLE') {
+      list.push({ key: 'status', label: `Status: ${this.selectedStatus()}` });
     }
     if (this.searchTerm().trim()) {
       list.push({ key: 'search', label: `Search: "${this.searchTerm().trim()}"` });
@@ -110,6 +115,7 @@ export class CatalogStore {
     const search = (params['search'] || '').trim();
     const category = (params['category'] || '').trim();
     const breed = (params['breed'] || '').trim();
+    const statusParam = (params['status'] || 'AVAILABLE').trim();
     const min = params['minPrice'] != null && params['minPrice'] !== '' ? Number(params['minPrice']) : null;
     const max = params['maxPrice'] != null && params['maxPrice'] !== '' ? Number(params['maxPrice']) : null;
     const sort = (params['sort'] || 'createdAt,desc').trim();
@@ -120,6 +126,7 @@ export class CatalogStore {
 
     this.selectedCategory.set(category);
     this.selectedBreed.set(breed);
+    this.selectedStatus.set(statusParam === 'ALL' ? '' : statusParam);
 
     this.rawMinPrice.set(min);
     this.minPrice.set(min);
@@ -140,6 +147,13 @@ export class CatalogStore {
     if (this.searchTerm().trim()) params['search'] = this.searchTerm().trim();
     if (this.selectedCategory()) params['category'] = this.selectedCategory();
     if (this.selectedBreed()) params['breed'] = this.selectedBreed();
+    if (this.selectedStatus()) {
+      if (this.selectedStatus() !== 'AVAILABLE') {
+        params['status'] = this.selectedStatus();
+      }
+    } else {
+      params['status'] = 'ALL';
+    }
     if (this.minPrice() != null) params['minPrice'] = this.minPrice()!;
     if (this.maxPrice() != null) params['maxPrice'] = this.maxPrice()!;
     if (this.sortOption() !== 'createdAt,desc') params['sort'] = this.sortOption();
@@ -164,10 +178,13 @@ export class CatalogStore {
   loadPets(): void {
     this.isLoading.set(true);
 
+    const statusParam = this.selectedStatus() ? (this.selectedStatus() as any) : undefined;
+
     this.petService.getPets({
       search: this.searchTerm().trim() || undefined,
       category: this.selectedCategory() || undefined,
       breed: this.selectedBreed() || undefined,
+      status: statusParam,
       minPrice: this.minPrice(),
       maxPrice: this.maxPrice(),
       page: this.currentPage(),
@@ -222,6 +239,14 @@ export class CatalogStore {
     this.priceInput$.next({ min: this.rawMinPrice(), max: val });
   }
 
+  // Instant status toggle
+  setStatus(status: string): void {
+    this.selectedStatus.set(status);
+    this.currentPage.set(0);
+    this.urlSyncTrigger.set({ replaceUrl: true });
+    this.loadPets();
+  }
+
   setSort(sort: string): void {
     this.sortOption.set(sort);
     this.urlSyncTrigger.set({ replaceUrl: true });
@@ -239,7 +264,7 @@ export class CatalogStore {
     this.viewMode.set(mode);
   }
 
-  removeFilter(key: 'search' | 'category' | 'breed' | 'price'): void {
+  removeFilter(key: 'search' | 'category' | 'breed' | 'price' | 'status'): void {
     switch (key) {
       case 'search':
         this.rawSearchInput.set('');
@@ -252,6 +277,9 @@ export class CatalogStore {
         break;
       case 'breed':
         this.selectedBreed.set('');
+        break;
+      case 'status':
+        this.selectedStatus.set('AVAILABLE');
         break;
       case 'price':
         this.rawMinPrice.set(null);
@@ -270,6 +298,7 @@ export class CatalogStore {
     this.searchTerm.set('');
     this.selectedCategory.set('');
     this.selectedBreed.set('');
+    this.selectedStatus.set('AVAILABLE');
     this.rawMinPrice.set(null);
     this.minPrice.set(null);
     this.rawMaxPrice.set(null);

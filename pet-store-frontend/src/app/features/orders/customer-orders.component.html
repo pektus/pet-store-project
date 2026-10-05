@@ -1,0 +1,237 @@
+    <div class="orders-container">
+      <header class="page-header">
+        <div class="header-content">
+          <h1>My Orders</h1>
+          <p class="subtitle">Track your pet adoptions, order progress, and fulfillment history.</p>
+        </div>
+        <div class="header-actions">
+          <a routerLink="/" class="btn btn-outline btn-sm">&#128062; Adopt Pets</a>
+          <a routerLink="/supplies" class="btn btn-outline btn-sm">&#128722; Shop Supplies</a>
+        </div>
+      </header>
+
+      @if (isLoading()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading your orders...</p>
+        </div>
+      } @else if (errorMessage()) {
+        <div class="error-banner">
+          <span>&#9888; {{ errorMessage() }}</span>
+          <button class="btn btn-outline btn-sm" (click)="loadOrders()">Retry</button>
+        </div>
+      } @else if (orders().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">&#128230;</div>
+          <h2>No orders found yet</h2>
+          <p>You haven't placed any orders or adopted any companions yet.</p>
+          <div class="empty-actions">
+            <a routerLink="/" class="btn btn-primary">Find a Pet</a>
+            <a routerLink="/supplies" class="btn btn-secondary">Browse Supplies</a>
+          </div>
+        </div>
+      } @else {
+        <div class="orders-list">
+          @for (order of orders(); track order.orderNumber) {
+            <article class="order-card">
+              <!-- Order Header -->
+              <div class="order-card-header">
+                <div class="order-meta">
+                  <div class="order-id-group">
+                    <span class="label">Order</span>
+                    <strong class="order-num">{{ order.orderNumber }}</strong>
+                  </div>
+                  <div class="order-date-group">
+                    <span class="label">Date Placed</span>
+                    <span>{{ order.createdAt | date:'mediumDate' }}</span>
+                  </div>
+                  <div class="order-total-group">
+                    <span class="label">Total</span>
+                    <strong class="order-price">{{ order.totalAmount | currency }}</strong>
+                  </div>
+                </div>
+
+                <div class="order-status-badge" [attr.data-status]="order.status">
+                  <span class="status-indicator"></span>
+                  <span class="status-text">{{ formatStatus(order.status) }}</span>
+                </div>
+              </div>
+
+              <!-- Fulfillment Timeline Stepper -->
+              @if (order.status !== 'CANCELLED') {
+                <div class="timeline-container">
+                  <div class="stepper">
+                    <div class="step" [class.active]="isStepReached(order.status, 'CONFIRMED')" [class.current]="order.status === 'CONFIRMED'">
+                      <div class="step-circle">&#10003;</div>
+                      <span class="step-label">Confirmed</span>
+                    </div>
+                    <div class="step-line" [class.active]="isStepReached(order.status, 'PROCESSING')"></div>
+                    <div class="step" [class.active]="isStepReached(order.status, 'PROCESSING')" [class.current]="order.status === 'PROCESSING'">
+                      <div class="step-circle">&#9881;</div>
+                      <span class="step-label">Processing</span>
+                    </div>
+                    <div class="step-line" [class.active]="isStepReached(order.status, 'SHIPPED')"></div>
+                    <div class="step" [class.active]="isStepReached(order.status, 'SHIPPED')" [class.current]="order.status === 'SHIPPED'">
+                      <div class="step-circle">&#128666;</div>
+                      <span class="step-label">Shipped</span>
+                    </div>
+                    <div class="step-line" [class.active]="isStepReached(order.status, 'DELIVERED')"></div>
+                    <div class="step" [class.active]="isStepReached(order.status, 'DELIVERED')" [class.current]="order.status === 'DELIVERED'">
+                      <div class="step-circle">&#127969;</div>
+                      <span class="step-label">Delivered</span>
+                    </div>
+                  </div>
+
+                  @if (order.carrier || order.trackingNumber) {
+                    <div class="tracking-info-banner">
+                      <span class="tracking-icon">&#128230;</span>
+                      <span>Carrier: <strong>{{ order.carrier || 'Standard Courier' }}</strong></span>
+                      @if (order.trackingNumber) {
+                        <span class="tracking-sep">&bull;</span>
+                        <span>Tracking: <code class="tracking-code">{{ order.trackingNumber }}</code></span>
+                      }
+                      @if (order.shippedAt) {
+                        <span class="tracking-sep">&bull;</span>
+                        <span>Shipped {{ order.shippedAt | date:'shortDate' }}</span>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="cancelled-banner">
+                  <span class="cancelled-icon">&#10006;</span>
+                  <div>
+                    <strong>Order Cancelled</strong>
+                    <p class="cancel-detail">
+                      {{ order.cancellationReason || 'Order was cancelled and payment has been refunded.' }}
+                      @if (order.cancelledAt) {
+                        <span>({{ order.cancelledAt | date:'medium' }})</span>
+                      }
+                    </p>
+                  </div>
+                </div>
+              }
+
+              <!-- Items Breakdown -->
+              <div class="items-list">
+                @for (item of order.items; track item.id) {
+                  <div class="item-row">
+                    <div class="item-img-wrap">
+                      @if (item.photoUrl) {
+                        <img [src]="item.photoUrl" [alt]="item.title" class="item-img" />
+                      } @else {
+                        <div class="item-img-placeholder">
+                          {{ item.itemType === 'PET' ? '&#128062;' : '&#128722;' }}
+                        </div>
+                      }
+                    </div>
+                    <div class="item-details">
+                      <h4 class="item-title">
+                        {{ item.title }}
+                        <span class="item-badge" [class.pet-badge]="item.itemType === 'PET'">
+                          {{ item.itemType }}
+                        </span>
+                      </h4>
+                      @if (item.subtitle) {
+                        <p class="item-subtitle">{{ item.subtitle }}</p>
+                      }
+                      <span class="item-qty">Qty: {{ item.quantity }} &times; {{ item.unitPrice | currency }}</span>
+                    </div>
+                    <div class="item-subtotal">
+                      {{ item.subtotal | currency }}
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <!-- Order Footer & Summary -->
+              <div class="order-card-footer">
+                <div class="delivery-info">
+                  <span class="delivery-title">&#128205; Ship To:</span>
+                  <span class="delivery-address">
+                    {{ order.recipientName }} &bull; {{ order.shippingAddressLine1 }}, {{ order.shippingCity }}, {{ order.shippingState }} {{ order.shippingPostalCode }}
+                  </span>
+                </div>
+
+                <div class="footer-actions">
+                  <div class="payment-badge-wrap">
+                    <span class="card-brand">{{ order.cardBrand }}</span>
+                    <span class="card-ending">&bull;&bull;&bull;&bull; {{ order.cardLastFour }}</span>
+                    <span class="payment-status-pill" [attr.data-payment]="order.paymentStatus">{{ order.paymentStatus }}</span>
+                  </div>
+
+                  @if (order.status === 'CONFIRMED') {
+                    <button class="btn btn-outline-danger btn-sm" (click)="openCancelModal(order)">
+                      Cancel Order
+                    </button>
+                  }
+                </div>
+              </div>
+            </article>
+          }
+
+          <!-- Pagination -->
+          @if (totalPages() > 1) {
+            <nav class="pagination-nav">
+              <button 
+                class="btn btn-outline btn-sm" 
+                [disabled]="currentPage() === 0" 
+                (click)="goToPage(currentPage() - 1)">
+                &larr; Previous
+              </button>
+              <span class="page-info">Page {{ currentPage() + 1 }} of {{ totalPages() }}</span>
+              <button 
+                class="btn btn-outline btn-sm" 
+                [disabled]="currentPage() >= totalPages() - 1" 
+                (click)="goToPage(currentPage() + 1)">
+                Next &rarr;
+              </button>
+            </nav>
+          }
+        </div>
+      }
+
+      <!-- Order Cancellation Modal -->
+      @if (cancellingOrder()) {
+        <div class="modal-backdrop" (click)="closeCancelModal()">
+          <div class="modal-card" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <h3>Cancel Order #{{ cancellingOrder()?.orderNumber }}</h3>
+              <button class="close-btn" (click)="closeCancelModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+              <p class="warning-text">
+                Are you sure you want to cancel this order? This action will automatically release any reserved pets and restock supplies back to the store.
+              </p>
+              <div class="form-group">
+                <label for="cancelReason">Reason for cancellation (optional):</label>
+                <textarea 
+                  id="cancelReason" 
+                  rows="3" 
+                  class="form-control" 
+                  placeholder="e.g. Changed mind, accidental order..."
+                  [ngModel]="cancellationReason()"
+                  (ngModelChange)="cancellationReason.set($event)">
+                </textarea>
+              </div>
+
+              @if (cancelErrorMessage()) {
+                <div class="error-inline">{{ cancelErrorMessage() }}</div>
+              }
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" [disabled]="isSubmittingCancel()" (click)="closeCancelModal()">
+                Keep Order
+              </button>
+              <button class="btn btn-danger" [disabled]="isSubmittingCancel()" (click)="confirmCancellation()">
+                @if (isSubmittingCancel()) {
+                  <span>Cancelling...</span>
+                } @else {
+                  <span>Confirm Cancellation</span>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>

@@ -5,30 +5,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-confirmation-modal',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    @if (isOpen()) {
-      <div class="modal-overlay" (click)="onCancel()">
-        <div class="modal-content" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h3>{{ title() }}</h3>
-            <button class="close-btn" (click)="onCancel()">&times;</button>
-          </div>
-          <div class="modal-body">
-            <p>{{ message() }}</p>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" (click)="onCancel()">Cancel</button>
-            <button 
-              class="btn" 
-              [ngClass]="isDestructive() ? 'btn-danger' : 'btn-primary'" 
-              (click)="onConfirm()">
-              {{ confirmText() }}
-            </button>
-          </div>
-        </div>
-      </div>
-    }
-  `,
+  templateUrl: './confirmation-modal.component.html',
   styles: [`
     .close-btn {
       font-size: 1.5rem;

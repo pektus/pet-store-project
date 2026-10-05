@@ -1,0 +1,64 @@
+<header class="navbar">
+  <div class="container nav-content">
+    <a routerLink="/" class="brand">
+      <span class="logo-icon">&#128062;</span>
+      <span class="brand-text">PetStore</span>
+    </a>
+
+    <nav class="nav-links">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">
+        Adopt Pets
+      </a>
+      <a routerLink="/supplies" routerLinkActive="active" class="nav-link">
+        Pet Supplies
+      </a>
+      @if (authStore.isAuthenticated() && !authStore.isAdmin()) {
+        <a routerLink="/orders" routerLinkActive="active" class="nav-link">
+          My Orders
+        </a>
+      }
+      @if (authStore.isAdmin()) {
+        <a routerLink="/admin/orders" routerLinkActive="active" class="nav-link">
+          Orders
+        </a>
+        <a routerLink="/admin/inventory" routerLinkActive="active" class="nav-link">
+          Inventory
+        </a>
+        <a routerLink="/admin/reports" routerLinkActive="active" class="nav-link">
+          Reports
+        </a>
+      }
+    </nav>
+
+    <div class="nav-actions">
+      <button class="cart-trigger-btn" (click)="cartStore.openDrawer()" aria-label="Open Shopping Cart">
+        <span class="cart-icon">&#128722;</span>
+        <span class="cart-label">Cart</span>
+        @if (cartStore.totalCount() > 0) {
+          <span class="cart-badge">{{ cartStore.totalCount() }}</span>
+        }
+      </button>
+
+      @if (authStore.isAuthenticated()) {
+        <span class="user-greeting">
+          Hello, <strong>{{ authStore.currentUser()?.fullName || authStore.currentUser()?.username }}</strong>
+          @if (authStore.isAdmin()) {
+            <span class="role-badge badge-admin">Admin</span>
+          } @else if (authStore.isCustomer()) {
+            <span class="role-badge badge-customer">Customer</span>
+          }
+        </span>
+        <button class="btn btn-secondary btn-sm" (click)="authStore.logout()">
+          Sign Out
+        </button>
+      } @else {
+        <a routerLink="/register" class="btn btn-outline btn-sm">
+          Register
+        </a>
+        <button class="btn btn-primary btn-sm" (click)="openLogin.emit()">
+          Sign In
+        </button>
+      }
+    </div>
+  </div>
+</header>

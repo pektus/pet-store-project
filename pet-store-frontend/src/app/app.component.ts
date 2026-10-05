@@ -9,29 +9,7 @@ import { CartDrawerComponent } from './features/cart/cart-drawer.component';
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule, RouterOutlet, NavbarComponent, LoginDialogComponent, CartDrawerComponent],
-  template: `
-    <div class="app-layout">
-      <app-navbar (openLogin)="isLoginOpen.set(true)" />
-
-      <main class="main-content">
-        <router-outlet />
-      </main>
-
-      <footer class="app-footer">
-        <div class="container footer-content">
-          <p>&copy; 2026 PetStore Enterprise Platform. Pure Spring Framework 7 &amp; Signal-First Angular.</p>
-        </div>
-      </footer>
-
-      <!-- Global Login Dialog -->
-      <app-login-dialog 
-        [isOpen]="isLoginOpen()" 
-        (close)="isLoginOpen.set(false)" />
-
-      <!-- Global Shopping Cart Drawer -->
-      <app-cart-drawer />
-    </div>
-  `,
+  templateUrl: './app.component.html',
   styles: [`
     .app-layout {
       min-height: 100vh;

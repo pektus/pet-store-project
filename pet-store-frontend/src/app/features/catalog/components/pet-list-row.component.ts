@@ -8,47 +8,7 @@ import { CartStore } from '../../../core/stores/cart.store';
   selector: 'app-pet-list-row',
   standalone: true,
   imports: [CommonModule, CurrencyPipe, StatusBadgeComponent],
-  template: `
-    <div class="list-row" (click)="selectPet.emit(pet().id)">
-      <div class="thumbnail-wrapper">
-        @if (pet().photoUrl) {
-          <img [src]="pet().photoUrl" [alt]="pet().name" class="thumbnail" />
-        } @else {
-          <div class="placeholder-thumb">&#128054;</div>
-        }
-      </div>
-
-      <div class="info-cell">
-        <h4 class="name">{{ pet().name }}</h4>
-        <span class="category-breed">{{ pet().category }} &bull; {{ pet().breed }}</span>
-      </div>
-
-      <div class="age-cell">
-        <span>{{ ageDisplay() }}</span>
-      </div>
-
-      <div class="status-cell">
-        <app-status-badge [status]="pet().status" />
-      </div>
-
-      <div class="price-cell">
-        <span class="price">{{ pet().price | currency }}</span>
-      </div>
-
-      <div class="action-cell">
-        <button class="btn btn-secondary btn-sm" (click)="$event.stopPropagation(); selectPet.emit(pet().id)">
-          View
-        </button>
-        @if (pet().status === 'AVAILABLE') {
-          <button class="btn btn-primary btn-sm btn-adopt" 
-                  [disabled]="cartStore.isPetInCart(pet().id)"
-                  (click)="$event.stopPropagation(); adoptPet()">
-            {{ cartStore.isPetInCart(pet().id) ? 'In Cart' : 'Adopt' }}
-          </button>
-        }
-      </div>
-    </div>
-  `,
+  templateUrl: './pet-list-row.component.html',
   styles: [`
     .list-row {
       display: grid;
@@ -129,7 +89,11 @@ export class PetListRowComponent {
   readonly selectPet = output<number>();
 
   adoptPet(): void {
-    this.cartStore.addItem('PET', this.pet().id, 1);
+    if (this.cartStore.isPetInCart(this.pet().id)) {
+      this.cartStore.isDrawerOpen.set(true);
+    } else {
+      this.cartStore.addItem('PET', this.pet().id, 1);
+    }
   }
 
   readonly ageDisplay = computed(() => {

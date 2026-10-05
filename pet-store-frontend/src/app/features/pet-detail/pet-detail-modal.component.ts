@@ -9,73 +9,7 @@ import { CartStore } from '../../core/stores/cart.store';
   selector: 'app-pet-detail-modal',
   standalone: true,
   imports: [CommonModule, CurrencyPipe, DatePipe, StatusBadgeComponent],
-  template: `
-    @if (petId() != null) {
-      <div class="modal-overlay" (click)="close.emit()">
-        <div class="modal-content detail-modal" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h3>Pet Profile Details</h3>
-            <button class="close-btn" (click)="close.emit()">&times;</button>
-          </div>
-
-          <div class="modal-body">
-            @if (isLoading()) {
-              <div class="loading-state">Loading profile details...</div>
-            } @else {
-              @if (pet(); as p) {
-                <div class="detail-grid">
-                  <div class="detail-image-wrapper">
-                    @if (p.photoUrl) {
-                      <img [src]="p.photoUrl" [alt]="p.name" class="detail-image" />
-                    } @else {
-                      <div class="placeholder-detail">&#128054;</div>
-                    }
-                  </div>
-
-                  <div class="detail-info">
-                    <div class="detail-header-row">
-                      <h2 class="name">{{ p.name }}</h2>
-                      <app-status-badge [status]="p.status" />
-                    </div>
-
-                    <p class="taxonomy">{{ p.category }} &bull; {{ p.breed }}</p>
-                    <p class="price">{{ p.price | currency }}</p>
-
-                    <div class="meta-block">
-                      <div class="meta-item">
-                        <span class="label">Age:</span>
-                        <span class="value">{{ p.ageMonths }} months</span>
-                      </div>
-                      <div class="meta-item">
-                        <span class="label">Listed on:</span>
-                        <span class="value">{{ p.createdAt | date:'mediumDate' }}</span>
-                      </div>
-                    </div>
-
-                    <div class="description-section">
-                      <h4>About {{ p.name }}</h4>
-                      <p class="description">{{ p.description || 'No specific description provided.' }}</p>
-                    </div>
-                  </div>
-                </div>
-              }
-            }
-          </div>
-
-          <div class="modal-footer">
-            <button class="btn btn-secondary" (click)="close.emit()">Close</button>
-            @if (pet()?.status === 'AVAILABLE') {
-              <button class="btn btn-primary" 
-                      [disabled]="cartStore.isPetInCart(pet()!.id)"
-                      (click)="adoptPet(pet()!)">
-                {{ cartStore.isPetInCart(pet()!.id) ? 'In Cart' : 'Adopt (Add to Cart)' }}
-              </button>
-            }
-          </div>
-        </div>
-      </div>
-    }
-  `,
+  templateUrl: './pet-detail-modal.component.html',
   styles: [`
     .detail-modal {
       max-width: 720px;
@@ -182,7 +116,12 @@ export class PetDetailModalComponent {
   readonly isLoading = signal<boolean>(false);
 
   adoptPet(pet: PetDetail): void {
-    this.cartStore.addItem('PET', pet.id, 1);
+    if (this.cartStore.isPetInCart(pet.id)) {
+      this.close.emit();
+      this.cartStore.isDrawerOpen.set(true);
+    } else {
+      this.cartStore.addItem('PET', pet.id, 1);
+    }
   }
 
   constructor() {

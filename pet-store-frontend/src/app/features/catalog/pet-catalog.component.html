@@ -1,0 +1,177 @@
+<div class="catalog-page container">
+  <!-- Search & Filter Controls -->
+  <section class="filter-card">
+    <div class="search-row">
+      <div class="search-input-wrapper">
+        <span class="search-icon">&#128269;</span>
+        <input 
+          type="text" 
+          placeholder="Search pets by name, breed, description..." 
+          [ngModel]="store.rawSearchInput()" 
+          (ngModelChange)="store.onSearchInput($event)"
+          class="search-input" />
+      </div>
+
+      <div class="view-toggles">
+        <button 
+          class="toggle-btn" 
+          [class.active]="store.viewMode() === 'grid'" 
+          (click)="store.setViewMode('grid')" 
+          title="Grid View">
+          &#9638; Grid
+        </button>
+        <button 
+          class="toggle-btn" 
+          [class.active]="store.viewMode() === 'list'" 
+          (click)="store.setViewMode('list')" 
+          title="List View">
+          &#9776; List
+        </button>
+      </div>
+    </div>
+
+    <!-- Category Filter Chips -->
+    <div class="category-chips">
+      <button 
+        class="chip" 
+        [class.active]="store.selectedCategory() === ''" 
+        (click)="store.setCategory('')">
+        All Pets
+      </button>
+      @for (cat of store.categories(); track cat) {
+        <button 
+          class="chip" 
+          [class.active]="store.selectedCategory() === cat" 
+          (click)="store.setCategory(cat)">
+          {{ cat }}
+        </button>
+      }
+    </div>
+
+    <!-- Secondary Filters Row -->
+    <div class="secondary-filters">
+      @if (store.breeds().length > 0) {
+        <div class="filter-item">
+          <label>Breed</label>
+          <select [ngModel]="store.selectedBreed()" (ngModelChange)="store.setBreed($event)">
+            <option value="">All Breeds</option>
+            @for (b of store.breeds(); track b) {
+              <option [value]="b">{{ b }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <div class="filter-item">
+        <label>Adoption Status</label>
+        <select [ngModel]="store.selectedStatus()" (ngModelChange)="store.setStatus($event)">
+          <option value="AVAILABLE">Available for Adoption</option>
+          <option value="PENDING">Pending Adoption</option>
+          <option value="ADOPTED">Already Adopted</option>
+          <option value="">All Companions</option>
+        </select>
+      </div>
+
+      <div class="filter-item price-inputs">
+        <label>Price Range</label>
+        <div class="price-bounds">
+          <input 
+            type="number" 
+            placeholder="Min $" 
+            [ngModel]="store.rawMinPrice()" 
+            (ngModelChange)="onMinPriceChange($event)" />
+          <span>-</span>
+          <input 
+            type="number" 
+            placeholder="Max $" 
+            [ngModel]="store.rawMaxPrice()" 
+            (ngModelChange)="onMaxPriceChange($event)" />
+        </div>
+      </div>
+
+      <div class="filter-item">
+        <label>Sort By</label>
+        <select [ngModel]="store.sortOption()" (ngModelChange)="store.setSort($event)">
+          <option value="createdAt,desc">Newest Listings</option>
+          <option value="price,asc">Price: Low to High</option>
+          <option value="price,desc">Price: High to Low</option>
+          <option value="name,asc">Name: A to Z</option>
+        </select>
+      </div>
+
+      @if (store.hasActiveFilters()) {
+        <div class="filter-item reset-action">
+          <button class="btn btn-secondary btn-sm" (click)="store.resetFilters()">
+            Reset Filters
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Active Filter Dismissal Chips -->
+    @if (store.hasActiveFilters()) {
+      <div class="active-filters-bar">
+        <span class="active-filters-label">Active:</span>
+        @for (f of store.activeFilters(); track f.key) {
+          <span class="active-chip">
+            {{ f.label }}
+            <button type="button" class="remove-chip-btn" (click)="store.removeFilter(f.key)">&times;</button>
+          </span>
+        }
+        <button type="button" class="clear-all-link" (click)="store.resetFilters()">Clear All</button>
+      </div>
+    }
+  </section>
+
+  <!-- Catalog Header / Result Count -->
+  <div class="catalog-header">
+    <h2 class="section-title">
+      {{ store.selectedStatus() === 'AVAILABLE' ? 'Available Pets for Adoption' : 'Pet Catalog' }}
+    </h2>
+    <span class="result-count">
+      Showing <strong>{{ store.pets().length }}</strong> of <strong>{{ store.totalElements() }}</strong> results
+    </span>
+  </div>
+
+  <!-- Loading State -->
+  @if (store.isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Finding loving companions...</p>
+    </div>
+  } @else if (store.pets().length === 0) {
+    <div class="empty-state">
+      <span class="empty-icon">&#128062;</span>
+      <h3>No pets found matching your criteria</h3>
+      <p>Try widening your search terms or clearing your active filters.</p>
+      <button class="btn btn-primary" (click)="store.resetFilters()">Reset All Filters</button>
+    </div>
+  } @else {
+    <!-- Grid View -->
+    @if (store.viewMode() === 'grid') {
+      <div class="pets-grid">
+        @for (pet of store.pets(); track pet.id) {
+          <app-pet-card [pet]="pet" (selectPet)="selectedPetId.set($event)" />
+        }
+      </div>
+    } @else {
+      <!-- List View -->
+      <div class="pets-list">
+        @for (pet of store.pets(); track pet.id) {
+          <app-pet-list-row [pet]="pet" (selectPet)="selectedPetId.set($event)" />
+        }
+      </div>
+    }
+
+    <!-- Pagination -->
+    <app-pagination 
+      [currentPage]="store.currentPage()" 
+      [totalPages]="store.totalPages()" 
+      (pageChange)="store.setPage($event)" />
+  }
+
+  <!-- Pet Detail Modal -->
+  <app-pet-detail-modal 
+    [petId]="selectedPetId()" 
+    (close)="selectedPetId.set(null)" />
+</div>

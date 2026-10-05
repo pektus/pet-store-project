@@ -1,0 +1,140 @@
+    <div class="inventory-page container">
+      <!-- Admin Inventory Tab Selector -->
+      <div class="admin-tabs">
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab() === 'pets'" 
+          (click)="activeTab.set('pets')">
+          &#128062; Pets Inventory
+        </button>
+        <button 
+          class="tab-btn" 
+          [class.active]="activeTab() === 'supplies'" 
+          (click)="activeTab.set('supplies')">
+          &#128230; Physical Merchandise & Supplies
+        </button>
+      </div>
+
+      @if (activeTab() === 'pets') {
+        <!-- Pets Inventory Section -->
+        <div class="page-header">
+          <div>
+            <h2>Pet Profiles & Adoption Inventory</h2>
+            <p class="subtitle">Maintain individual pet profiles, track lifecycle status, and manage listings</p>
+          </div>
+          <button class="btn btn-primary" (click)="openAddModal()">
+            + Add New Pet
+          </button>
+        </div>
+
+        <!-- Filter Controls Bar -->
+        <div class="control-bar">
+          <div class="filter-group">
+            <label>Filter by Status:</label>
+            <select [ngModel]="selectedStatus()" (ngModelChange)="onStatusFilterChange($event)">
+              <option value="">All Statuses</option>
+              <option value="AVAILABLE">AVAILABLE</option>
+              <option value="PENDING">PENDING</option>
+              <option value="ADOPTED">ADOPTED</option>
+            </select>
+          </div>
+
+          <div class="inventory-stats">
+            <span>Total Records: <strong>{{ totalElements() }}</strong></span>
+          </div>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="table-container">
+          @if (isLoading()) {
+            <div class="loading-state">Loading inventory data...</div>
+          } @else if (pets().length === 0) {
+            <div class="empty-state">No inventory records found.</div>
+          } @else {
+            <table class="inventory-table">
+              <thead>
+                <tr>
+                  <th>Photo</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Breed</th>
+                  <th>Age</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Created At</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (pet of pets(); track pet.id) {
+                  <tr>
+                    <td class="photo-cell">
+                      <img 
+                        [src]="pet.photoUrl || '/assets/placeholder-pet.png'" 
+                        [alt]="pet.name" 
+                        class="thumb-img" 
+                        (error)="$any($event.target).src = 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2248%22 height=%2248%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2394a3b8%22 stroke-width=%221.5%22><rect width=%2218%22 height=%2218%22 x=%223%22 y=%223%22 rx=%222%22/><circle cx=%229%22 cy=%229%22 r=%222%22/><path d=%22m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21%22/></svg>'" />
+                    </td>
+                    <td class="name-cell">
+                      <strong>{{ pet.name }}</strong>
+                    </td>
+                    <td>
+                      <span class="category-pill">{{ pet.category }}</span>
+                    </td>
+                    <td>{{ pet.breed }}</td>
+                    <td>{{ pet.ageMonths }} mos</td>
+                    <td>{{ pet.price | currency }}</td>
+                    <td>
+                      <div class="status-dropdown-wrap">
+                        <select 
+                          [ngModel]="pet.status" 
+                          (ngModelChange)="changeStatus(pet.id, $event)"
+                          [disabled]="pet.status === 'ADOPTED'"
+                          class="status-select">
+                          <option value="AVAILABLE">AVAILABLE</option>
+                          <option value="PENDING">PENDING</option>
+                          <option value="ADOPTED">ADOPTED</option>
+                        </select>
+                      </div>
+                    </td>
+                    <td class="date-cell">{{ pet.createdAt | date:'shortDate' }}</td>
+                    <td class="actions-cell">
+                      <button class="btn btn-secondary btn-sm" (click)="openEditModal(pet.id)">
+                        Edit
+                      </button>
+                      <button class="btn btn-danger btn-sm" (click)="confirmDelete(pet)">
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+
+            <app-pagination 
+              [currentPage]="currentPage()" 
+              [totalPages]="totalPages()" 
+              (pageChange)="onPageChange($event)" />
+          }
+        </div>
+
+        <!-- Add / Edit Modal -->
+        <app-admin-pet-form 
+          [isOpen]="isFormOpen()" 
+          [petToEdit]="petToEdit()" 
+          (close)="isFormOpen.set(false)" 
+          (saved)="loadInventory()" />
+
+        <!-- Delete Confirmation Modal -->
+        <app-confirmation-modal 
+          [isOpen]="isConfirmOpen()" 
+          title="Delete Pet Record" 
+          [message]="deletePromptMessage()" 
+          confirmButtonText="Delete Pet"
+          (confirm)="executeDelete()" 
+          (cancel)="isConfirmOpen.set(false)" />
+      } @else {
+        <!-- Physical Supplies Section -->
+        <app-admin-supply-inventory />
+      }
+    </div>

@@ -1,0 +1,104 @@
+<div class="supplies-page container">
+  <header class="catalog-header">
+    <h1 class="page-title">Pet Care &amp; Supplies</h1>
+    <p class="page-subtitle">Quality nutrition, grooming essentials, toys, and healthcare for your pets.</p>
+  </header>
+
+  <!-- Search & Category Filters -->
+  <section class="filter-card">
+    <div class="search-row">
+      <div class="search-input-wrapper">
+        <span class="search-icon">&#128269;</span>
+        <input 
+          type="text" 
+          placeholder="Search supplies by name, description, SKU..." 
+          [ngModel]="searchTerm()" 
+          (ngModelChange)="onSearchChange($event)"
+          class="search-input" />
+      </div>
+    </div>
+
+    <div class="category-chips">
+      <button 
+        class="chip" 
+        [class.active]="selectedCategory() === ''" 
+        (click)="setCategory('')">
+        All Categories
+      </button>
+      @for (cat of categories; track cat) {
+        <button 
+          class="chip" 
+          [class.active]="selectedCategory() === cat" 
+          (click)="setCategory(cat)">
+          {{ formatCategoryName(cat) }}
+        </button>
+      }
+    </div>
+  </section>
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading supplies...</p>
+    </div>
+  } @else if (supplies().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">&#128230;</div>
+      <h3>No supplies found</h3>
+      <p>Try searching with different terms or selecting another category.</p>
+    </div>
+  } @else {
+    <!-- Supplies Grid -->
+    <div class="supplies-grid">
+      @for (supply of supplies(); track supply.id) {
+        <div class="supply-card" [class.out-of-stock]="supply.isOutOfStock">
+          <div class="image-wrapper">
+            @if (supply.photoUrl) {
+              <img [src]="supply.photoUrl" [alt]="supply.name" class="supply-image" loading="lazy" />
+            } @else {
+              <div class="placeholder-image">
+                <span class="placeholder-icon">{{ getCategoryIcon(supply.category) }}</span>
+              </div>
+            }
+            @if (supply.isOutOfStock) {
+              <span class="badge-stock out">Out of Stock</span>
+            } @else if (supply.isLowStock) {
+              <span class="badge-stock low">Only {{ supply.stockQuantity }} left!</span>
+            }
+          </div>
+
+          <div class="card-body">
+            <div class="sku-category">
+              <span class="cat-tag">{{ formatCategoryName(supply.category) }}</span>
+              <span class="sku-tag">{{ supply.sku }}</span>
+            </div>
+
+            <h3 class="supply-name">{{ supply.name }}</h3>
+
+            @if (supply.description) {
+              <p class="description">{{ supply.description }}</p>
+            }
+
+            <div class="card-footer">
+              <span class="price">{{ supply.price | currency }}</span>
+
+              <div class="add-cart-action">
+                @if (supply.status === 'ACTIVE' && supply.stockQuantity > 0) {
+                  <button class="btn btn-primary btn-sm btn-add" 
+                          (click)="addToCart(supply)">
+                    Add to Cart
+                  </button>
+                } @else {
+                  <button class="btn btn-disabled btn-sm" disabled>
+                    Unavailable
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

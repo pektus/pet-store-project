@@ -6,11 +6,7 @@ import { PetStatus } from '../../../core/models/pet.model';
   selector: 'app-status-badge',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <span class="badge" [ngClass]="badgeClass()">
-      {{ status() }}
-    </span>
-  `,
+  templateUrl: './status-badge.component.html',
   styles: [`
     .badge {
       display: inline-flex;

@@ -8,144 +8,7 @@ import { CartItem } from '../../core/models/cart.model';
   selector: 'app-cart-drawer',
   standalone: true,
   imports: [CommonModule, CurrencyPipe],
-  template: `
-    @if (cartStore.isDrawerOpen()) {
-      <div class="drawer-overlay" (click)="cartStore.closeDrawer()">
-        <div class="drawer-panel" (click)="$event.stopPropagation()">
-          
-          <!-- Drawer Header -->
-          <div class="drawer-header">
-            <div class="header-title">
-              <span class="cart-icon">&#128722;</span>
-              <h3>Shopping Cart</h3>
-              <span class="items-badge">{{ cartStore.totalCount() }}</span>
-            </div>
-            <button class="close-btn" (click)="cartStore.closeDrawer()" aria-label="Close cart">&times;</button>
-          </div>
-
-          <!-- Drawer Body -->
-          <div class="drawer-body">
-            @if (cartStore.error()) {
-              <div class="alert alert-danger">
-                {{ cartStore.error() }}
-              </div>
-            }
-
-            @if (cartStore.items().length === 0) {
-              <div class="empty-cart">
-                <div class="empty-icon">&#128062;</div>
-                <h4>Your cart is empty</h4>
-                <p>Browse our catalog to find pets looking for a home or high-quality pet supplies!</p>
-                <button class="btn btn-primary" (click)="browseCatalog()">Browse Catalog</button>
-              </div>
-            } @else {
-              <div class="items-list">
-                @for (item of cartStore.items(); track item.id) {
-                  <div class="cart-item-card" [class.item-unavailable]="!item.isAvailable">
-                    <div class="item-thumbnail">
-                      @if (item.photoUrl) {
-                        <img [src]="item.photoUrl" [alt]="item.title" />
-                      } @else {
-                        <div class="thumb-placeholder">
-                          {{ item.itemType === 'PET' ? '&#128054;' : '&#128230;' }}
-                        </div>
-                      }
-                    </div>
-
-                    <div class="item-details">
-                      <div class="item-head">
-                        <h4 class="item-title">{{ item.title }}</h4>
-                        <button class="remove-btn" 
-                                (click)="cartStore.removeItem(item.id)" 
-                                [disabled]="cartStore.updatingItemId() === item.id"
-                                title="Remove item">&times;</button>
-                      </div>
-
-                      @if (item.subtitle) {
-                        <p class="item-subtitle">{{ item.subtitle }}</p>
-                      }
-
-                      @if (!item.isAvailable) {
-                        <div class="item-status-warning">
-                          <span class="warning-icon">&#9888;</span>
-                          {{ item.availabilityMessage || 'Item is currently unavailable' }}
-                        </div>
-                      }
-
-                      <div class="item-footer">
-                        <div class="item-price">
-                          {{ item.unitPrice | currency }}
-                        </div>
-
-                        <!-- Stepper / Quantity -->
-                        <div class="item-quantity-ctrl">
-                          @if (item.itemType === 'PET') {
-                            <span class="pet-qty-badge">Qty: 1 (Single)</span>
-                          } @else {
-                            <div class="stepper">
-                              <button class="stepper-btn" 
-                                      (click)="decrementSupply(item)" 
-                                      [disabled]="cartStore.updatingItemId() === item.id || item.quantity <= 1">
-                                &minus;
-                              </button>
-                              <span class="stepper-value">{{ item.quantity }}</span>
-                              <button class="stepper-btn" 
-                                      (click)="incrementSupply(item)" 
-                                      [disabled]="cartStore.updatingItemId() === item.id || isMaxStockReached(item)">
-                                &plus;
-                              </button>
-                            </div>
-                          }
-                        </div>
-
-                        <div class="item-subtotal">
-                          {{ item.subtotal | currency }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                }
-              </div>
-            }
-          </div>
-
-          <!-- Drawer Footer -->
-          @if (cartStore.items().length > 0) {
-            <div class="drawer-footer">
-              @if (cartStore.hasUnavailableItems()) {
-                <div class="alert alert-warning">
-                  &#9888; Some items in your cart are no longer available. Please remove them before checkout.
-                </div>
-              }
-
-              <div class="summary-row">
-                <span class="summary-label">Total Items:</span>
-                <span class="summary-val">{{ cartStore.totalCount() }}</span>
-              </div>
-
-              <div class="summary-row total-row">
-                <span class="summary-label">Estimated Total:</span>
-                <span class="summary-price">{{ cartStore.totalPrice() | currency }}</span>
-              </div>
-
-              <div class="footer-actions">
-                <button class="btn btn-secondary btn-sm" 
-                        (click)="cartStore.clearCart()" 
-                        [disabled]="cartStore.loading()">
-                  Clear Cart
-                </button>
-                <button class="btn btn-primary btn-checkout" 
-                        [disabled]="!cartStore.canCheckout() || cartStore.loading()"
-                        (click)="proceedToCheckout()">
-                  Proceed to Checkout
-                </button>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-    }
-  `,
+  templateUrl: './cart-drawer.component.html',
   styles: [`
     .drawer-overlay {
       position: fixed;
@@ -348,8 +211,24 @@ import { CartItem } from '../../core/models/cart.model';
       font-weight: 600;
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 0.35rem;
       margin-top: 0.25rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-remove-inline {
+      background: none;
+      border: none;
+      color: #dc2626;
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 0.72rem;
+      padding: 0;
+      font-weight: 700;
+    }
+
+    .btn-remove-inline:hover {
+      color: #991b1b;
     }
 
     .item-footer {

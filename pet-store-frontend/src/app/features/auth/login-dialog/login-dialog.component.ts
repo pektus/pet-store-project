@@ -8,70 +8,7 @@ import { AuthStore } from '../../../core/stores/auth.store';
   selector: 'app-login-dialog',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  template: `
-    @if (isOpen()) {
-      <div class="modal-overlay" (click)="close.emit()">
-        <div class="modal-content login-box" (click)="$event.stopPropagation()">
-          <div class="modal-header">
-            <h3>Sign In</h3>
-            <button class="close-btn" (click)="close.emit()">&times;</button>
-          </div>
-
-          <form (ngSubmit)="onSubmit()">
-            <div class="modal-body">
-              @if (errorMessage()) {
-                <div class="error-alert">
-                  {{ errorMessage() }}
-                </div>
-              }
-
-              <div class="form-group">
-                <label for="username">Username or Email</label>
-                <input 
-                  id="username" 
-                  type="text" 
-                  required 
-                  [ngModel]="username()" 
-                  (ngModelChange)="username.set($event)" 
-                  name="username" 
-                  class="form-control" 
-                  placeholder="e.g. admin or username" />
-              </div>
-
-              <div class="form-group">
-                <label for="password">Password</label>
-                <input 
-                  id="password" 
-                  type="password" 
-                  required 
-                  [ngModel]="password()" 
-                  (ngModelChange)="password.set($event)" 
-                  name="password" 
-                  class="form-control" 
-                  placeholder="••••••••" />
-              </div>
-            </div>
-
-            <div class="modal-footer">
-              <div class="signup-prompt">
-                <span>Need an account?</span>
-                <a routerLink="/register" (click)="close.emit()" class="register-link">Register</a>
-              </div>
-              <div class="footer-actions">
-                <button type="button" class="btn btn-secondary" (click)="close.emit()">Cancel</button>
-                <button 
-                  type="submit" 
-                  class="btn btn-primary" 
-                  [disabled]="isSubmitting() || !username() || !password()">
-                  {{ isSubmitting() ? 'Signing in...' : 'Sign In' }}
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-    }
-  `,
+  templateUrl: './login-dialog.component.html',
   styles: [`
     .login-box {
       max-width: 420px;

@@ -1,0 +1,21 @@
+<div class="app-layout">
+  <app-navbar (openLogin)="isLoginOpen.set(true)" />
+
+  <main class="main-content">
+    <router-outlet />
+  </main>
+
+  <footer class="app-footer">
+    <div class="container footer-content">
+      <p>&copy; 2026 PetStore Enterprise Platform. Pure Spring Framework 7 &amp; Signal-First Angular.</p>
+    </div>
+  </footer>
+
+  <!-- Global Login Dialog -->
+  <app-login-dialog 
+    [isOpen]="isLoginOpen()" 
+    (close)="isLoginOpen.set(false)" />
+
+  <!-- Global Shopping Cart Drawer -->
+  <app-cart-drawer />
+</div>

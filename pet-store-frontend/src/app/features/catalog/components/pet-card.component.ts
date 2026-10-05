@@ -8,47 +8,7 @@ import { CartStore } from '../../../core/stores/cart.store';
   selector: 'app-pet-card',
   standalone: true,
   imports: [CommonModule, CurrencyPipe, StatusBadgeComponent],
-  template: `
-    <div class="pet-card" (click)="selectPet.emit(pet().id)">
-      <div class="image-wrapper">
-        @if (pet().photoUrl) {
-          <img [src]="pet().photoUrl" [alt]="pet().name" class="pet-image" loading="lazy" />
-        } @else {
-          <div class="placeholder-image">
-            <span class="placeholder-icon">&#128054;</span>
-          </div>
-        }
-        <div class="status-overlay">
-          <app-status-badge [status]="pet().status" />
-        </div>
-      </div>
-
-      <div class="card-body">
-        <div class="category-breed">
-          <span class="category">{{ pet().category }}</span> &bull; 
-          <span class="breed">{{ pet().breed }}</span>
-        </div>
-        <h3 class="pet-name">{{ pet().name }}</h3>
-        <p class="age-text">{{ ageDisplay() }}</p>
-
-        <div class="card-footer">
-          <span class="price">{{ pet().price | currency }}</span>
-          <div class="card-actions">
-            <button class="btn btn-secondary btn-sm" (click)="$event.stopPropagation(); selectPet.emit(pet().id)">
-              Details
-            </button>
-            @if (pet().status === 'AVAILABLE') {
-              <button class="btn btn-primary btn-sm btn-adopt" 
-                      [disabled]="cartStore.isPetInCart(pet().id)"
-                      (click)="$event.stopPropagation(); adoptPet()">
-                {{ cartStore.isPetInCart(pet().id) ? 'In Cart' : 'Adopt' }}
-              </button>
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
+  templateUrl: './pet-card.component.html',
   styles: [`
     .pet-card {
       background: #ffffff;
@@ -149,7 +109,11 @@ export class PetCardComponent {
   readonly selectPet = output<number>();
 
   adoptPet(): void {
-    this.cartStore.addItem('PET', this.pet().id, 1);
+    if (this.cartStore.isPetInCart(this.pet().id)) {
+      this.cartStore.isDrawerOpen.set(true);
+    } else {
+      this.cartStore.addItem('PET', this.pet().id, 1);
+    }
   }
 
   readonly ageDisplay = computed(() => {

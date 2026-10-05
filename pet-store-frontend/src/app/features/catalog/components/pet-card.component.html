@@ -1,0 +1,39 @@
+<div class="pet-card" (click)="selectPet.emit(pet().id)">
+  <div class="image-wrapper">
+    @if (pet().photoUrl) {
+      <img [src]="pet().photoUrl" [alt]="pet().name" class="pet-image" loading="lazy" />
+    } @else {
+      <div class="placeholder-image">
+        <span class="placeholder-icon">&#128054;</span>
+      </div>
+    }
+    <div class="status-overlay">
+      <app-status-badge [status]="pet().status" />
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="category-breed">
+      <span class="category">{{ pet().category }}</span> &bull; 
+      <span class="breed">{{ pet().breed }}</span>
+    </div>
+    <h3 class="pet-name">{{ pet().name }}</h3>
+    <p class="age-text">{{ ageDisplay() }}</p>
+
+    <div class="card-footer">
+      <span class="price">{{ pet().price | currency }}</span>
+      <div class="card-actions">
+        <button class="btn btn-secondary btn-sm" (click)="$event.stopPropagation(); selectPet.emit(pet().id)">
+          Details
+        </button>
+        @if (pet().status === 'AVAILABLE') {
+          <button class="btn btn-primary btn-sm btn-adopt" 
+                  [class.btn-in-cart]="cartStore.isPetInCart(pet().id)"
+                  (click)="$event.stopPropagation(); adoptPet()">
+            {{ cartStore.isPetInCart(pet().id) ? 'In Cart &#128722;' : 'Adopt' }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+</div>
