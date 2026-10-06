@@ -30,12 +30,12 @@
         <repository>
             <id>gitea</id>
             <name>Gitea Package Registry</name>
-            <url>${gitea.url}/api/packages/${gitea.prodpackage.owner}/maven</url>
+            <url>${gitea.url}/api/packages/${gitea.package.owner}/maven</url>
         </repository>
         <snapshotRepository>
             <id>gitea</id>
             <name>Gitea Snapshot Package Registry</name>
-            <url>${gitea.url}/api/packages/${gitea.devpackage.owner}/maven</url>
+            <url>${gitea.url}/api/packages/${gitea.package.owner}/maven</url>
         </snapshotRepository>
     </distributionManagement>
 
@@ -85,8 +85,7 @@
         <gitea.host>192.168.1.233</gitea.host>
         <gitea.ssh.port>2222</gitea.ssh.port>
         <gitea.url>http://192.168.1.233</gitea.url>
-        <gitea.devpackage.owner>DevHome</gitea.devpackage.owner>
-        <gitea.prodpackage.owner>ProdHome</gitea.prodpackage.owner>
+        <gitea.package.owner>DevHome</gitea.package.owner>
         <gitea.scm.owner>adrian</gitea.scm.owner>
 
         <!-- Testing -->
